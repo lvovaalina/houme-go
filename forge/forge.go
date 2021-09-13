@@ -20,10 +20,6 @@ var (
 	token        = ""
 )
 
-type AuthResponse struct {
-	AccessToken string `json:"access_token"`
-}
-
 func Authentificate() string {
 	data := url.Values{}
 	data.Set("client_id", clentId)
@@ -119,7 +115,7 @@ func DeleteBucket(bucketKey string) {
 func CreateBucket(bucketKey string) {
 	var jsonData = []byte(`{
 		"bucketKey":"` + bucketKey + `",
-		"policyKey": "transient"
+		"policyKey": "persistent"
 	}`)
 
 	token := GetAuthToken(false)
@@ -151,11 +147,13 @@ func CreateBucket(bucketKey string) {
 	log.Println(bodyString)
 }
 
-func GetBucketObjects(bucketKey string) {
+func GetBucketObjects(bucketKey string) []Project {
+	var projects []Project
+
 	token := GetAuthToken(false)
 
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", baseUrl+"oss/v2/buckets/"+bucketKey+"/objects?domain:localhost:5000", nil)
+	req, err := http.NewRequest("GET", baseUrl+"oss/v2/buckets/"+bucketKey+"/objects?domain=localhost:10000", nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -165,18 +163,35 @@ func GetBucketObjects(bucketKey string) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalln(err)
-		return
+		return projects
 	}
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
-		return
+		return projects
 	}
 
 	bodyString := string(bodyBytes)
 	log.Println(bodyString)
 	log.Println(resp.StatusCode)
+
+	var result ObjectsResponse
+	if err := json.Unmarshal(bodyBytes, &result); err != nil {
+		log.Println("Can not unmarshal JSON")
+		return projects
+	}
+
+	for _, object := range result.Objects {
+		urn := getFileUrn(object.BucketKey, object.ObjectKey)
+		projects = append(projects, Project{
+			FileName:   object.ObjectKey,
+			BucketName: object.BucketKey,
+			Urn:        urn,
+		})
+	}
+
+	return projects
 }
 
 func UploadFileToBucket(bucketKey string, filePath string, fileName string) {
@@ -291,7 +306,7 @@ func GetTranslationStatus(bucketKey string, fileName string) {
 			panic(err)
 		}
 
-		//log.Println(dst.String())
+		log.Println(dst.String())
 	}
 }
 
