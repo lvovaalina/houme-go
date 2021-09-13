@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -154,7 +155,7 @@ func GetBucketObjects(bucketKey string) {
 	token := GetAuthToken(false)
 
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", baseUrl+"oss/v2/buckets/"+bucketKey+"/details", nil)
+	req, err := http.NewRequest("GET", baseUrl+"oss/v2/buckets/"+bucketKey+"/objects?domain:localhost:5000", nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -175,6 +176,7 @@ func GetBucketObjects(bucketKey string) {
 
 	bodyString := string(bodyBytes)
 	log.Println(bodyString)
+	log.Println(resp.StatusCode)
 }
 
 func UploadFileToBucket(bucketKey string, filePath string, fileName string) {
@@ -255,15 +257,15 @@ func TranslateFile(bucketKey string, fileName string) {
 	}
 
 	bodyString := string(bodyBytes)
-	log.Println(resp.Status)
 	log.Println(bodyString)
 }
 
 func GetTranslationStatus(bucketKey string, fileName string) {
 	urn := getFileUrn(bucketKey, fileName)
-
+	fmt.Println(urn)
+	token = GetAuthToken(false)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", baseUrl+"modelderivative/v2/designdata/"+urn+"/manifest", nil)
+	req, err := http.NewRequest("GET", baseUrl+"modelderivative/v2/designdata/"+urn+"/manifest?domain=localhost:5000", nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -275,14 +277,70 @@ func GetTranslationStatus(bucketKey string, fileName string) {
 		return
 	}
 
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	log.Println(resp.Status)
+
+	if resp.StatusCode == 200 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+
+		dst := &bytes.Buffer{}
+		if err := json.Indent(dst, bodyBytes, "", "  "); err != nil {
+			panic(err)
+		}
+
+		//log.Println(dst.String())
+	}
+}
+
+func GetFileData(bucketKey string, fileName string, getMetadata bool) {
+	urn := getFileUrn(bucketKey, fileName)
+	//urn := "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6aG91bWUtdGVzdC90ZXN0LXByb2plY3QucnZ0"
+	guid := "c6c90385-d1a1-d45d-e544-d41905d396d0"
+	token = GetAuthToken(false)
+	client := &http.Client{}
+
+	path := baseUrl + "modelderivative/v2/designdata/" + urn + "/metadata"
+	if getMetadata {
+		path = path + "?domain=localhost:5000"
+	} else {
+		path = path + "/" + guid + "/properties?" + "domain=localhost:5000"
+	}
+
+	req, err := http.NewRequest("GET", path, nil)
+
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
+	}
+
+	req.Header.Add("Authorization", "Bearer "+token)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
 		return
 	}
 
-	bodyString := string(bodyBytes)
-	log.Println(bodyString)
+	log.Println(resp.Status)
+	log.Println(req.Body)
+
+	if resp.StatusCode == 200 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+
+		dst := &bytes.Buffer{}
+		if err := json.Indent(dst, bodyBytes, "", "  "); err != nil {
+			panic(err)
+		}
+
+		_ = ioutil.WriteFile("list.json", dst.Bytes(), 0644)
+
+		log.Println(dst.String())
+	}
 }
 
 func getFileUrn(bucketKey string, fileName string) string {
