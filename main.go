@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"./forge"
+	"bitbucket.org/houmeteam/houme-go/forge"
 	"github.com/gin-gonic/gin"
 	_ "github.com/heroku/x/hmetrics/onload"
 )
