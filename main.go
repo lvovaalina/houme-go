@@ -9,8 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	//"bitbucket.org/houmeteam/houme-go/forge"
-	"./forge"
+	"bitbucket.org/houmeteam/houme-go/forge"
 	"github.com/gin-gonic/gin"
 	_ "github.com/heroku/x/hmetrics/onload"
 )
