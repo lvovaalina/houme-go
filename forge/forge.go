@@ -194,6 +194,36 @@ func GetBucketObjects(bucketKey string) []Project {
 	return projects
 }
 
+func UploadFileBinaryToBucket(bucketKey string, binaryData []byte, fileName string) {
+	token := GetAuthToken(false)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(
+		"PUT", baseUrl+"oss/v2/buckets/"+bucketKey+"/objects/"+fileName,
+		bytes.NewBuffer(binaryData))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	req.Header.Add("Authorization", "Bearer "+token)
+	req.Header.Add("Content-Type", "text/plain; charset=UTF-8")
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	bodyString := string(bodyBytes)
+	log.Println(bodyString)
+	log.Println(resp.Status)
+}
+
 func UploadFileToBucket(bucketKey string, filePath string, fileName string) {
 	token := GetAuthToken(false)
 
