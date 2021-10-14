@@ -11,7 +11,7 @@ type AuthResponse struct {
 }
 
 type Object struct {
-	BucketKey string `json: "bucketKey"`
+	BucketKey string `json:"bucketKey"`
 	ObjectKey string `json:"objectKey"`
 }
 
