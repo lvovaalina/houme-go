@@ -61,12 +61,29 @@ func translateFile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }
 
+func deleteFile(c *gin.Context) {
+	bodyBytes, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		log.Fatal(err)
+		c.JSON(http.StatusServiceUnavailable, gin.H{"message": err})
+	}
+
+	var result TranslateResponse
+	if err := json.Unmarshal(bodyBytes, &result); err != nil {
+		log.Println("Can not unmarshal JSON")
+		c.JSON(http.StatusBadRequest, gin.H{"message": err})
+	}
+
+	forge.DeleteFileInBucket("houme", result.FileName)
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
+}
+
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
@@ -96,6 +113,7 @@ func main() {
 	router.GET("/projects", getAllProjects)
 	router.POST("/upload", uploadFile)
 	router.POST("/translate", translateFile)
+	router.DELETE("/deleteFile", deleteFile)
 
 	router.Run(":" + port)
 }
