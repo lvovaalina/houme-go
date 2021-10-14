@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -33,24 +34,14 @@ func uploadFile(c *gin.Context) {
 	filename := header.Filename
 	log.Println(filename)
 
-	if _, err := os.Stat("/public"); os.IsNotExist(err) {
-		os.Mkdir("./public", 0755)
+	buf := bytes.NewBuffer(nil)
+	if _, err := io.Copy(buf, file); err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("Could not copy bytes. File err : %s", err.Error()))
+		return
 	}
 
-	out, err := os.Create("public/" + filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer out.Close()
-	_, err = io.Copy(out, file)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("File has been uploaded")
-
-	forge.UploadFileToBucket("houme", "public/"+filename, filename)
-	filepath := "http://localhost:8080/file/" + filename
-	c.JSON(http.StatusOK, gin.H{"filepath": filepath})
+	forge.UploadFileBinaryToBucket("houme", buf.Bytes(), filename)
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully uploaded file"})
 }
 
 func translateFile(c *gin.Context) {

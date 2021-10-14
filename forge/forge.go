@@ -386,7 +386,6 @@ func GetFileData(bucketKey string, fileName string, getMetadata bool) {
 
 func getFileUrn(bucketKey string, fileName string) string {
 	objectKey := "urn:adsk.objects:os.object:" + bucketKey + "/" + fileName
-	log.Println("OBJECT KEY: ", objectKey)
 	encodedUrn := base64.StdEncoding.EncodeToString([]byte(objectKey))
 	return encodedUrn
 }
