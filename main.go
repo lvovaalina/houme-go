@@ -15,7 +15,7 @@ import (
 )
 
 type TranslateResponse struct {
-	FileName string `json: filename`
+	FileName string `json:"filename"`
 }
 
 func getAllProjects(c *gin.Context) {
@@ -25,6 +25,7 @@ func getAllProjects(c *gin.Context) {
 }
 
 func uploadFile(c *gin.Context) {
+	log.Println("Starting to upload a file")
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("file err : %s", err.Error()))
@@ -42,6 +43,7 @@ func uploadFile(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("File has been uploaded")
 
 	forge.UploadFileToBucket("houme", "public/"+filename, filename)
 	filepath := "http://localhost:8080/file/" + filename
