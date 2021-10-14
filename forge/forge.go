@@ -172,10 +172,6 @@ func GetBucketObjects(bucketKey string) []Project {
 		return projects
 	}
 
-	bodyString := string(bodyBytes)
-	log.Println(bodyString)
-	log.Println(resp.StatusCode)
-
 	var result ObjectsResponse
 	if err := json.Unmarshal(bodyBytes, &result); err != nil {
 		log.Println("Can not unmarshal JSON")

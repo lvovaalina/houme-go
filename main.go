@@ -19,7 +19,6 @@ type TranslateResponse struct {
 }
 
 func getAllProjects(c *gin.Context) {
-	log.Println("tut")
 	projects := forge.GetBucketObjects("houme")
 	c.JSON(http.StatusOK, projects)
 }
@@ -33,6 +32,10 @@ func uploadFile(c *gin.Context) {
 	}
 	filename := header.Filename
 	log.Println(filename)
+
+	if _, err := os.Stat("/public"); os.IsNotExist(err) {
+		os.Mkdir("./public", 0755)
+	}
 
 	out, err := os.Create("public/" + filename)
 	if err != nil {
