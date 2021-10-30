@@ -47,6 +47,19 @@ type Job struct {
 	Property           Property `gorm:"foreignKey:PropertyCode"`
 }
 
+type ConstructionJobProperty struct {
+	gorm.Model
+	ConstructionJobPropertyId      int `gorm:"primary_key;autoIncrement"`
+	ConstructionSpeed              float32
+	ConstructionCost               float32
+	ConstructionFixDurationInHours float32
+	MaxWorkers                     int
+	OptWorkers                     int
+	MinWorkers                     int
+	JobCode                        string
+	Job                            Job `gorm:"foreignKey:JobCode"`
+}
+
 var db *gorm.DB
 
 func main() {
@@ -60,12 +73,14 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	db.DropTable(&Property{})
-	db.DropTable(&Job{})
+	db.DropTableIfExists(&Property{})
+	db.DropTableIfExists(&Job{})
+	db.DropTableIfExists(&ConstructionJobProperty{})
 
 	db.AutoMigrate(&Project{})
 	db.AutoMigrate(&Property{})
 	db.AutoMigrate(&Job{})
+	db.AutoMigrate(&ConstructionJobProperty{})
 
 	var properties = []Property{
 		{PropertyName: "Foundation volume", PropertyUnit: "sq.m.", PropertyCode: "FV"},
@@ -128,6 +143,61 @@ func main() {
 		{JobCode: "comiss-works", JobName: "Commissioning works", StageName: "Commissioning works"},
 	}
 
+	var constructionProperties = []ConstructionJobProperty{
+		{JobCode: "rem-fert-lay", ConstructionSpeed: 25.0, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
+		{JobCode: "ax-mark", ConstructionSpeed: 6.25, ConstructionCost: 0, MinWorkers: 4, MaxWorkers: 4, OptWorkers: 4},
+
+		{JobCode: "pile-pour", ConstructionSpeed: 0.56, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 6, OptWorkers: 3},
+		{JobCode: "pile-shr-1", ConstructionFixDurationInHours: 14, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
+		{JobCode: "pile-grill", ConstructionSpeed: 0.83, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{JobCode: "pile-shr-2", ConstructionFixDurationInHours: 26, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
+
+		{JobCode: "ribbon-dig", ConstructionSpeed: 1.67, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{JobCode: "ribbon-tying-formwork", ConstructionSpeed: 0.67, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{JobCode: "ribbon-pour", ConstructionSpeed: 0.42, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{JobCode: "ribbon-shr-3", ConstructionFixDurationInHours: 26, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
+
+		{JobCode: "plate-exv", ConstructionSpeed: 1.88, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
+		{JobCode: "plate-backfl-grvl-ramr", ConstructionSpeed: 0.94, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
+		{JobCode: "plate-styrofoam-foil-form-reinf", ConstructionSpeed: 0.42, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
+		{JobCode: "plate-fill", ConstructionSpeed: 2.5, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
+		{JobCode: "plate-shr-4", ConstructionFixDurationInHours: 26, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
+
+		{JobCode: "backfl-earth", ConstructionSpeed: 2.22, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{JobCode: "commun", ConstructionFixDurationInHours: 24, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+
+		{JobCode: "foam-blck", ConstructionSpeed: 2.67, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 12, OptWorkers: 6},
+		{JobCode: "brick", ConstructionSpeed: 0.13, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 12, OptWorkers: 6},
+		{JobCode: "clt", ConstructionSpeed: 0.78, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 16, OptWorkers: 4},
+		{JobCode: "framt", ConstructionSpeed: 0.13, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
+
+		{JobCode: "roof-frame", ConstructionSpeed: 0.31, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
+		{JobCode: "fold", ConstructionSpeed: 0.83, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
+		{JobCode: "soft-roof", ConstructionSpeed: 1.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
+		{JobCode: "roof-tiles", ConstructionSpeed: 1.67, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
+
+		{JobCode: "wind-windsills", ConstructionSpeed: 0.2, ConstructionCost: 0, MinWorkers: 2, MaxWorkers: 6, OptWorkers: 4},
+		{JobCode: "warming", ConstructionSpeed: 2.0, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
+		{JobCode: "floor-sys", ConstructionSpeed: 0.63, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
+		{JobCode: "stairs", ConstructionSpeed: 0.01, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
+
+		{JobCode: "plaster", ConstructionSpeed: 1.67, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 8},
+		{JobCode: "ventfacade", ConstructionSpeed: 0.42, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 16, OptWorkers: 8},
+
+		{JobCode: "floor", ConstructionSpeed: 1.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
+		{JobCode: "elecrt-wiring", ConstructionSpeed: 1.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
+
+		{JobCode: "plast-paint", ConstructionSpeed: 1.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
+		{JobCode: "tile", ConstructionSpeed: 1.00, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
+
+		{JobCode: "doors", ConstructionSpeed: 0.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
+		{JobCode: "kitchen-assbly-eq-inst", ConstructionSpeed: 0.03, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
+		{JobCode: "plumbing", ConstructionSpeed: 3.33, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
+		{JobCode: "light-switches", ConstructionFixDurationInHours: 32, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
+		{JobCode: "furnish", ConstructionFixDurationInHours: 64, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 6, OptWorkers: 4},
+		{JobCode: "comiss-works", ConstructionFixDurationInHours: 48, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
+	}
+
 	//log.Println(properties)
 	for _, prop := range properties {
 		db.Create(&prop)
@@ -135,5 +205,9 @@ func main() {
 
 	for _, job := range jobs {
 		db.Create(&job)
+	}
+
+	for _, constr := range constructionProperties {
+		db.Create(&constr)
 	}
 }
