@@ -1,11 +1,11 @@
-package model
+package models
 
 import "github.com/jinzhu/gorm"
 
 type Project struct {
 	gorm.Model
 	ProjectId                int    `gorm:"primary_key;autoIncrement"`
-	Name                     string `gorm:"unique"`
+	Name                     string `gorm:"unique" binding:"required"`
 	BucketName               string
 	Filename                 string `gorm:"unique"`
 	LivingArea               string
@@ -17,4 +17,5 @@ type Project struct {
 	WallMaterial             string
 	FinishMaterial           string
 	RoofingMaterial          string
+	ProjectProperties        []ProjectProperty
 }

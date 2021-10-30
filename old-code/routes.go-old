@@ -25,6 +25,13 @@ type TranslateResponse struct {
 	FileName string `json:"filename"`
 }
 
+type PropertyViewModel struct {
+	PropertyId    int
+	PropertyName  string
+	PropertyUnit  string
+	PropertyValue float32
+}
+
 type ProjectModel struct {
 	Name                     string `json:"name"`
 	LivingArea               string `json:"livingArea"`
@@ -112,39 +119,22 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func addProject(c *gin.Context) {
-	bodyBytes, err := ioutil.ReadAll(c.Request.Body)
-	if err != nil {
-		log.Fatal(err)
-		c.JSON(http.StatusServiceUnavailable, gin.H{"message": err})
-	}
 
-	var result ProjectModel
-	if err := json.Unmarshal(bodyBytes, &result); err != nil {
-		log.Println("Can not unmarshal JSON")
-		c.JSON(http.StatusBadRequest, gin.H{"message": err})
-	}
-
-	project := model.Project{
-		Name:                     result.Name,
-		LivingArea:               result.LivingArea,
-		RoomsNumber:              result.RoomsNumber,
-		ConstructonWorkersNumber: result.ConstructonWorkersNumber,
-		WallMaterial:             result.WallMaterial,
-		FinishMaterial:           result.FinishMaterial,
-		FoundationMaterial:       result.FoundationMaterial,
-		RoofingMaterial:          result.RoofingMaterial,
-	}
-
-	dbResult := db.Create(&project)
-	if dbResult.Error == nil {
-		c.JSON(http.StatusOK, gin.H{"project": project})
-	} else {
-		log.Println(dbResult.Error, project.ID)
-	}
 }
 
 func getProperties(c *gin.Context) {
+	var properties []model.Property
+	db.Find(&properties)
 
+	var vm []ProjectViewModel
+	for _, prop := range properties {
+		vm = append(vm, ProjectViewModel{
+			PropertyId:   prop.PropertyId,
+			PropertyName: prop.PropertyName,
+			PropertyUnit: prop.PropertyUnit})
+	}
+
+	c.JSON(http.StatusOK, vm)
 }
 
 func RouterInitialize(port string) {
