@@ -40,13 +40,19 @@ func main() {
 	db.AutoMigrate(&models.Project{})
 	db.AutoMigrate(&models.Property{})
 	db.AutoMigrate(&models.ProjectProperty{})
+	db.AutoMigrate(&models.Job{})
+	db.AutoMigrate(&models.ConstructionJobProperty{})
+	db.AutoMigrate(&models.ProjectJob{})
 
 	defer db.Close()
 
 	projectRepository := repositories.NewProjectRepository(db)
 	propertiesRepository := repositories.NewPropertyRepository(db)
+	jobsRepository := repositories.NewJobRepository(db)
+	constructionJobPropertyRepository := repositories.NewConstructionJobPropertyRepository(db)
 
-	route := configs.SetupRoutes(projectRepository, propertiesRepository)
+	route := configs.SetupRoutes(
+		projectRepository, propertiesRepository, jobsRepository, constructionJobPropertyRepository)
 
 	route.Run(":" + port)
 }

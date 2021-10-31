@@ -10,10 +10,14 @@ type ProjectJob struct {
 	ConstructionCost     float32
 	ConstructionDuration float32
 
-	ConstructionJobPropertyId int
-	JobId                     int
-	ProjectId                 int
-	ConstructionJobProperty   ConstructionJobProperty `gorm:"foreignKey:ConstructionJobPropertyId"`
-	Project                   Project                 `gorm:"foreignKey:ProjectId"`
-	Job                       Job                     `gorm:"foreignKey:JobId"`
+	ConstructionCostInHours int
+	ConstructionCostInDays  int
+
+	JobCode      string
+	PropertyCode string
+
+	JobId     int
+	ProjectId int
+	Project   Project `gorm:"foreignKey:ProjectId"`
+	Job       Job     `gorm:"foreignKey:JobId"`
 }

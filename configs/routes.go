@@ -15,8 +15,12 @@ import (
 
 func SetupRoutes(
 	projectRepository *repositories.ProjectRepository,
-	propertiesRepository *repositories.PropertyRepository) *gin.Engine {
+	propertiesRepository *repositories.PropertyRepository,
+	jobsRepository *repositories.JobRepository,
+	constructionJobPropertiesRepository *repositories.ConstructionJobPropertyRepository) *gin.Engine {
 	route := gin.Default()
+
+	route.Use(gin.Logger())
 
 	route.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -47,7 +51,7 @@ func SetupRoutes(
 		code := http.StatusOK
 
 		// save contact & get it's response
-		response := services.CreateProject(&project, *projectRepository)
+		response := services.CreateProject(&project, *projectRepository, *constructionJobPropertiesRepository)
 
 		// save contact failed
 		if !response.Success {
@@ -62,6 +66,18 @@ func SetupRoutes(
 		code := http.StatusOK
 
 		response := services.FindAllProperties(*propertiesRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
+	route.GET("/getJobs", func(context *gin.Context) {
+		code := http.StatusOK
+
+		response := services.FindAllJobs(*jobsRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest

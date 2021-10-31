@@ -14,12 +14,12 @@ func NewProjectRepository(db *gorm.DB) *ProjectRepository {
 	return &ProjectRepository{db: db}
 }
 
-func (r *ProjectRepository) Save(contact *models.Project) RepositoryResult {
-	err := r.db.Save(contact).Error
+func (r *ProjectRepository) Save(project *models.Project) RepositoryResult {
+	err := r.db.Save(project).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}
 	}
 
-	return RepositoryResult{Result: contact}
+	return RepositoryResult{Result: project}
 }

@@ -17,5 +17,7 @@ type Project struct {
 	WallMaterial             string
 	FinishMaterial           string
 	RoofingMaterial          string
+	ConstructionCompanyName  string
 	ProjectProperties        []ProjectProperty
+	ProjectJobs              []ProjectJob
 }
