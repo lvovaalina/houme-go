@@ -19,9 +19,12 @@ func main() {
 	}
 
 	// database configs
-	dbUser, dbPassword, dbName := "postgres", "l8397040", "houmly"
+	//dbUser, dbPassword, dbName := "postgres", "l8397040", "houmly"
 
-	db, err := database.ConnectToDB(dbUser, dbPassword, dbName)
+	dbHost, dbUser, dbPassword, dbName :=
+		"ec2-52-22-81-147.compute-1.amazonaws.com", "soxoxijvmbhqiv", "0ab277b623defd4ca7a72cba84bc60f06d7cabb6a8b311bc7580250bcef78b69", "ddnmu64tjqh9ju"
+
+	db, err := database.ConnectToDB(dbHost, dbUser, dbPassword, dbName)
 
 	// unable to connect to database
 	if err != nil {

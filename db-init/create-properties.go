@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
-	"gorm.io/gorm"
 )
 
 type Project struct {
@@ -69,7 +69,7 @@ func main() {
 	var err error
 	db, err = gorm.Open(
 		"postgres",
-		"host=localhost port=5432 user=postgres dbname=houmly sslmode=disable password=l8397040")
+		"host=ec2-52-22-81-147.compute-1.amazonaws.com port=5432 user=soxoxijvmbhqiv dbname=ddnmu64tjqh9ju password=0ab277b623defd4ca7a72cba84bc60f06d7cabb6a8b311bc7580250bcef78b69")
 
 	if err != nil {
 		log.Fatal(err)
