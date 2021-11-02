@@ -35,3 +35,13 @@ func (r *ProjectRepository) FindAll() RepositoryResult {
 
 	return RepositoryResult{Result: &properties}
 }
+
+func (r *ProjectRepository) DeleteProjectById(id string) RepositoryResult {
+	err := r.db.Delete(&models.Project{}, id).Error
+
+	if err != nil {
+		return RepositoryResult{Error: err}
+	}
+
+	return RepositoryResult{Result: nil}
+}

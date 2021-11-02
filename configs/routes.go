@@ -98,5 +98,19 @@ func SetupRoutes(
 		context.JSON(code, response)
 	})
 
+	route.DELETE("/deleteProject/:id", func(context *gin.Context) {
+		id := context.Param("id")
+
+		code := http.StatusOK
+
+		response := services.DeleteProjectById(id, *projectRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
 	return route
 }

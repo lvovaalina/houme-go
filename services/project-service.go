@@ -46,3 +46,13 @@ func GetAllProjects(repository repositories.ProjectRepository) dtos.Response {
 
 	return dtos.Response{Success: true, Data: datas}
 }
+
+func DeleteProjectById(id string, repository repositories.ProjectRepository) dtos.Response {
+	operationResult := repository.DeleteProjectById(id)
+
+	if operationResult.Error != nil {
+		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
+	}
+
+	return dtos.Response{Success: true}
+}
