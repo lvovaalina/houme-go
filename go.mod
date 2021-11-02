@@ -21,20 +21,20 @@ require (
 	gorm.io/gorm v1.22.2 // indirect
 )
 
-// replace bitbucket.com/houmeteam/houme-go/forge => ../forge
+replace bitbucket.com/houmeteam/houme-go/forge => ../forge
 
-// replace bitbucket.com/houmeteam/houme-go/models => ../models
+replace bitbucket.com/houmeteam/houme-go/models => ../models
 
-// replace bitbucket.com/houmeteam/houme-go/configs => ../configs
+replace bitbucket.com/houmeteam/houme-go/configs => ../configs
 
-// replace bitbucket.com/houmeteam/houme-go/database => ../database
+replace bitbucket.com/houmeteam/houme-go/database => ../database
 
-// replace bitbucket.com/houmeteam/houme-go/dtos => ../dtos
+replace bitbucket.com/houmeteam/houme-go/dtos => ../dtos
 
-// replace bitbucket.com/houmeteam/houme-go/helpers => ../helpers
+replace bitbucket.com/houmeteam/houme-go/helpers => ../helpers
 
-// replace bitbucket.com/houmeteam/houme-go/langs => ../langs
+replace bitbucket.com/houmeteam/houme-go/langs => ../langs
 
-// replace bitbucket.com/houmeteam/houme-go/repositories => ../repositories
+replace bitbucket.com/houmeteam/houme-go/repositories => ../repositories
 
-// replace bitbucket.com/houmeteam/houme-go/services => ../services
+replace bitbucket.com/houmeteam/houme-go/services => ../services
