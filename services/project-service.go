@@ -23,7 +23,20 @@ func CreateProject(
 		*project,
 		constructionPropertiesRepositoryResult.Result.(*[]models.ConstructionJobProperty))
 
-	project.ProjectJobs = projectJobsCalculated
+	calcJobMap := map[string]helpers.JobCalculations{}
+	for _, prop := range projectJobsCalculated {
+		calcJobMap[prop.JobCode] = prop
+	}
+
+	for index, job := range project.ProjectJobs {
+		calJob := calcJobMap[job.JobCode]
+		(&project.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
+		(&project.ProjectJobs[index]).ConstructionDurationInDays = calJob.ConstructionDurationInDays
+		(&project.ProjectJobs[index]).ConstructionDurationInHours = calJob.ConstructionDurationInHours
+		(&project.ProjectJobs[index]).ConstructionWorkers = calJob.ConstructionWorkers
+		(&project.ProjectJobs[index]).ConstructionDuration = calJob.ConstructionDuration
+	}
+
 	operationResult := repository.Save(project)
 
 	if operationResult.Error != nil {

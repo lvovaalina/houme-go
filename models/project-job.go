@@ -10,8 +10,8 @@ type ProjectJob struct {
 	ConstructionCost     float32
 	ConstructionDuration float32
 
-	ConstructionCostInHours int
-	ConstructionCostInDays  int
+	ConstructionDurationInHours int
+	ConstructionDurationInDays  int
 
 	JobCode      string
 	PropertyCode string
