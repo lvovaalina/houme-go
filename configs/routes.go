@@ -112,5 +112,19 @@ func SetupRoutes(
 		context.JSON(code, response)
 	})
 
+	route.GET("/getProject/:id", func(context *gin.Context) {
+		id := context.Param("id")
+
+		code := http.StatusOK
+
+		response := services.GetProjectById(id, *projectRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
 	return route
 }

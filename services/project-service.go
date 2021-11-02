@@ -37,6 +37,16 @@ func CreateProject(
 		(&project.ProjectJobs[index]).ConstructionDuration = calJob.ConstructionDuration
 	}
 
+	var projectCost int
+	var projectDuration int
+	for _, j := range projectJobsCalculated {
+		projectDuration += j.ConstructionDurationInDays
+		projectCost += int(j.ConstructionCost)
+	}
+
+	project.ConstructionDuration = projectDuration
+	project.ConstructionCost = projectCost
+
 	operationResult := repository.Save(project)
 
 	if operationResult.Error != nil {
@@ -68,4 +78,14 @@ func DeleteProjectById(id string, repository repositories.ProjectRepository) dto
 	}
 
 	return dtos.Response{Success: true}
+}
+
+func GetProjectById(id string, repository repositories.ProjectRepository) dtos.Response {
+	operationResult := repository.GetProjectById(id)
+
+	if operationResult.Error != nil {
+		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
+	}
+
+	return dtos.Response{Success: true, Data: operationResult.Result}
 }
