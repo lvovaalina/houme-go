@@ -9,9 +9,20 @@ import (
 
 const workingHoursInDay = 8
 
+type JobCalculations struct {
+	ConstructionWorkers int
+	ConstructionCost    float32
+
+	ConstructionDuration        float32
+	ConstructionDurationInHours int
+	ConstructionDurationInDays  int
+
+	JobCode string
+}
+
 func CalculateCostDurationForProjectJobs(
 	project models.Project,
-	constructionProperties *[]models.ConstructionJobProperty) []models.ProjectJob {
+	constructionProperties *[]models.ConstructionJobProperty) []JobCalculations {
 
 	jobPropMap := map[string]models.ConstructionJobProperty{}
 	for _, prop := range *constructionProperties {
@@ -23,7 +34,7 @@ func CalculateCostDurationForProjectJobs(
 		propertiesMap[p.PropertyCode] = p.PropertyValue
 	}
 
-	var calcProjectJobs []models.ProjectJob
+	var calcProjectJobs []JobCalculations
 	for _, job := range project.ProjectJobs {
 		jobProp := jobPropMap[job.JobCode]
 		jobValue := propertiesMap[job.PropertyCode]
@@ -46,13 +57,13 @@ func CalculateCostDurationForProjectJobs(
 		log.Println("Job Code: ", job.JobCode,
 			",Work Num: ", constrWorkNumber, ", Dur: ", constrDur)
 
-		calcJob := models.ProjectJob{
-			ConstructionWorkers:     constrWorkNumber,
-			ConstructionDuration:    constrDur,
-			ConstructionCostInHours: constrDurInHours,
-			ConstructionCostInDays:  constrDurInDays,
-			ConstructionCost:        0,
-			JobId:                   job.JobId,
+		calcJob := JobCalculations{
+			ConstructionWorkers:         constrWorkNumber,
+			ConstructionDuration:        constrDur,
+			ConstructionDurationInHours: constrDurInHours,
+			ConstructionDurationInDays:  constrDurInDays,
+			ConstructionCost:            0,
+			JobCode:                     job.JobCode,
 		}
 
 		calcProjectJobs = append(calcProjectJobs, calcJob)

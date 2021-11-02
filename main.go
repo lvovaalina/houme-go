@@ -22,7 +22,10 @@ func main() {
 	//dbUser, dbPassword, dbName := "postgres", "l8397040", "houmly"
 
 	dbHost, dbUser, dbPassword, dbName :=
-		"ec2-52-22-81-147.compute-1.amazonaws.com", "soxoxijvmbhqiv", "0ab277b623defd4ca7a72cba84bc60f06d7cabb6a8b311bc7580250bcef78b69", "ddnmu64tjqh9ju"
+		"ec2-52-22-81-147.compute-1.amazonaws.com",
+		"soxoxijvmbhqiv",
+		"0ab277b623defd4ca7a72cba84bc60f06d7cabb6a8b311bc7580250bcef78b69",
+		"ddnmu64tjqh9ju"
 
 	db, err := database.ConnectToDB(dbHost, dbUser, dbPassword, dbName)
 
@@ -40,12 +43,13 @@ func main() {
 	}
 
 	// migration
-	db.AutoMigrate(&models.Project{})
+
 	db.AutoMigrate(&models.Property{})
-	db.AutoMigrate(&models.ProjectProperty{})
 	db.AutoMigrate(&models.Job{})
 	db.AutoMigrate(&models.ConstructionJobProperty{})
 	db.AutoMigrate(&models.ProjectJob{})
+	db.AutoMigrate(&models.ProjectProperty{})
+	db.AutoMigrate(&models.Project{})
 
 	//defer db.Close()
 

@@ -7,23 +7,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Project struct {
-	gorm.Model
-	ProjectId                int    `gorm:"primary_key;autoIncrement"`
-	Name                     string `gorm:"unique"`
-	BucketName               string
-	Filename                 string `gorm:"unique"`
-	LivingArea               string
-	RoomsNumber              int
-	ConstructionDuraton      int
-	ConstructionCost         int
-	ConstructonWorkersNumber string
-	FoundationMaterial       string
-	WallMaterial             string
-	FinishMaterial           string
-	RoofingMaterial          string
-}
-
 type Property struct {
 	gorm.Model
 	PropertyId   int    `gorm:"primary_key;autoIncrement"`
@@ -80,7 +63,6 @@ func main() {
 	db.DropTableIfExists(&Job{})
 	db.DropTableIfExists(&ConstructionJobProperty{})
 
-	db.AutoMigrate(&Project{})
 	db.AutoMigrate(&Property{})
 	db.AutoMigrate(&Job{})
 	db.AutoMigrate(&ConstructionJobProperty{})

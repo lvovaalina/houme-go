@@ -19,7 +19,7 @@ type Project struct {
 	RoofingMaterial          string
 	ConstructionCompanyName  string
 	ProjectProperties        []ProjectProperty `gorm:"foreignKey:ProjectId"`
-	ProjectJobs              []ProjectJob      `gorm:"foreignKey:ProjectJobId"`
+	ProjectJobs              []ProjectJob      `gorm:"foreignKey:ProjectId"`
 }
 
 type ProjectMin struct {
