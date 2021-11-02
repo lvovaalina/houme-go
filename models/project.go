@@ -1,6 +1,6 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import "gorm.io/gorm"
 
 type Project struct {
 	gorm.Model
@@ -18,6 +18,15 @@ type Project struct {
 	FinishMaterial           string
 	RoofingMaterial          string
 	ConstructionCompanyName  string
-	ProjectProperties        []ProjectProperty
-	ProjectJobs              []ProjectJob
+	ProjectProperties        []ProjectProperty `gorm:"foreignKey:ProjectId"`
+	ProjectJobs              []ProjectJob      `gorm:"foreignKey:ProjectJobId"`
+}
+
+type ProjectMin struct {
+	ProjectId   int
+	Name        string
+	BucketName  string
+	Filename    string
+	LivingArea  string
+	RoomsNumber int
 }

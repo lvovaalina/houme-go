@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
 type Project struct {

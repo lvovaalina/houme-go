@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"bitbucket.org/houmeteam/houme-go/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type ConstructionJobPropertyRepository struct {

@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"bitbucket.org/houmeteam/houme-go/models"
 )
@@ -22,4 +22,16 @@ func (r *ProjectRepository) Save(project *models.Project) RepositoryResult {
 	}
 
 	return RepositoryResult{Result: project}
+}
+
+func (r *ProjectRepository) FindAll() RepositoryResult {
+	var properties []models.ProjectMin
+
+	err := r.db.Model(&models.Project{}).Find(&properties).Error
+
+	if err != nil {
+		return RepositoryResult{Error: err}
+	}
+
+	return RepositoryResult{Result: &properties}
 }

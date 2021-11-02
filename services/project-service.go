@@ -34,3 +34,15 @@ func CreateProject(
 
 	return dtos.Response{Success: true, Data: data}
 }
+
+func GetAllProjects(repository repositories.ProjectRepository) dtos.Response {
+	operationResult := repository.FindAll()
+
+	if operationResult.Error != nil {
+		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
+	}
+
+	var datas = operationResult.Result.(*[]models.ProjectMin)
+
+	return dtos.Response{Success: true, Data: datas}
+}

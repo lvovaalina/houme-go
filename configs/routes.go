@@ -86,5 +86,17 @@ func SetupRoutes(
 		context.JSON(code, response)
 	})
 
+	route.GET("/getProjects", func(context *gin.Context) {
+		code := http.StatusOK
+
+		response := services.GetAllProjects(*projectRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
 	return route
 }

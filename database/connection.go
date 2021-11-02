@@ -3,8 +3,8 @@ package database
 import (
 	"fmt"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func ConnectToDB(dbUser string, dbPassword string, dbName string) (*gorm.DB, error) {
@@ -13,5 +13,5 @@ func ConnectToDB(dbUser string, dbPassword string, dbName string) (*gorm.DB, err
 		dbUser, dbName, dbPassword,
 	)
 
-	return gorm.Open("postgres", connectionString)
+	return gorm.Open(postgres.Open(connectionString), &gorm.Config{QueryFields: true})
 }

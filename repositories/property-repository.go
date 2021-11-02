@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"bitbucket.org/houmeteam/houme-go/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type PropertyRepository struct {

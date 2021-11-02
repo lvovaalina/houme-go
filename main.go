@@ -29,7 +29,7 @@ func main() {
 	}
 
 	// ping to database
-	err = db.DB().Ping()
+	//err = db..Ping()
 
 	// error ping to database
 	if err != nil {
@@ -44,7 +44,7 @@ func main() {
 	db.AutoMigrate(&models.ConstructionJobProperty{})
 	db.AutoMigrate(&models.ProjectJob{})
 
-	defer db.Close()
+	//defer db.Close()
 
 	projectRepository := repositories.NewProjectRepository(db)
 	propertiesRepository := repositories.NewPropertyRepository(db)
