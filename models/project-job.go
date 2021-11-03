@@ -16,8 +16,8 @@ type ProjectJob struct {
 	JobCode      string
 	PropertyCode string
 
-	JobId     int
-	ProjectId int
-	Project   Project `gorm:"foreignKey:ProjectId"`
-	Job       Job     `gorm:"foreignKey:JobId"`
+	ProjectRefer int
+
+	JobId int
+	Job   Job `gorm:"foreignKey:JobId;references:JobId"`
 }

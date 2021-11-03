@@ -45,3 +45,18 @@ func (r *ProjectRepository) DeleteProjectById(id string) RepositoryResult {
 
 	return RepositoryResult{Result: nil}
 }
+
+func (r *ProjectRepository) GetProjectById(id string) RepositoryResult {
+	var project models.Project
+	err := r.db.Preload("ProjectJobs").
+		Preload("ProjectJobs.Job").
+		Preload("ProjectProperties").
+		Preload("ProjectProperties.Property").
+		First(&project, id).Error
+
+	if err != nil {
+		return RepositoryResult{Error: err}
+	}
+
+	return RepositoryResult{Result: &project}
+}

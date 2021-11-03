@@ -1,8 +1,6 @@
 package repositories
 
 import (
-	"log"
-
 	"bitbucket.org/houmeteam/houme-go/models"
 	"gorm.io/gorm"
 )
@@ -17,8 +15,6 @@ func NewConstructionJobPropertyRepository(db *gorm.DB) *ConstructionJobPropertyR
 
 func (r *ConstructionJobPropertyRepository) FindPropertiesByCompanyName(companyName string) RepositoryResult {
 	var properties []models.ConstructionJobProperty
-
-	log.Println(companyName)
 
 	err := r.db.Where("company_name = ?", companyName).Find(&properties).Error
 
