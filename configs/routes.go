@@ -17,7 +17,8 @@ func SetupRoutes(
 	projectRepository *repositories.ProjectRepository,
 	propertiesRepository *repositories.PropertyRepository,
 	jobsRepository *repositories.JobRepository,
-	constructionJobPropertiesRepository *repositories.ConstructionJobPropertyRepository) *gin.Engine {
+	constructionJobPropertiesRepository *repositories.ConstructionJobPropertyRepository,
+	projectJobRepository *repositories.ProjectJobRepository) *gin.Engine {
 	route := gin.Default()
 
 	route.Use(gin.Logger())
@@ -118,6 +119,35 @@ func SetupRoutes(
 		code := http.StatusOK
 
 		response := services.GetProjectById(id, *projectRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
+	route.PUT("/updateProject/:id", func(context *gin.Context) {
+		id := context.Param("id")
+
+		var project models.Project
+
+		err := context.ShouldBindJSON(&project)
+
+		// validation errors
+		if err != nil {
+			response := helpers.GenerateValidationResponse(err)
+
+			context.JSON(http.StatusBadRequest, response)
+
+			return
+		}
+
+		code := http.StatusOK
+
+		response := services.UpdateProjectById(
+			id, &project, *projectRepository,
+			*constructionJobPropertiesRepository, *projectJobRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest

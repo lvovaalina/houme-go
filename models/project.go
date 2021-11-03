@@ -4,20 +4,20 @@ import "gorm.io/gorm"
 
 type Project struct {
 	gorm.Model
-	ProjectId                int    `gorm:"unique;primary_key;autoIncrement"`
-	Name                     string `gorm:"unique" binding:"required"`
-	BucketName               string
-	Filename                 string `gorm:"unique"`
-	LivingArea               string
-	RoomsNumber              int
-	ConstructionDuration     int
-	ConstructionCost         int
-	ConstructonWorkersNumber string
-	FoundationMaterial       string
-	WallMaterial             string
-	FinishMaterial           string
-	RoofingMaterial          string
-	ConstructionCompanyName  string
+	ProjectId                 int    `gorm:"unique;primary_key;autoIncrement"`
+	Name                      string `gorm:"unique" binding:"required"`
+	BucketName                string
+	Filename                  string `gorm:"unique"`
+	LivingArea                string
+	RoomsNumber               int
+	ConstructionDuration      int
+	ConstructionCost          int
+	ConstructionWorkersNumber string
+	FoundationMaterial        string
+	WallMaterial              string
+	FinishMaterial            string
+	RoofingMaterial           string
+	ConstructionCompanyName   string
 
 	ProjectJobs       []ProjectJob `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
 	ProjectProperties []ProjectProperty

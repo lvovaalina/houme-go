@@ -58,5 +58,5 @@ func (r *ProjectRepository) GetProjectById(id string) RepositoryResult {
 		return RepositoryResult{Error: err}
 	}
 
-	return RepositoryResult{Result: project}
+	return RepositoryResult{Result: &project}
 }
