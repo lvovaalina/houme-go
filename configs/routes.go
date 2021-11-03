@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -32,7 +33,7 @@ func SetupRoutes(
 	}))
 
 	route.POST("/create", func(context *gin.Context) {
-		// initialization contact model
+		// initialization project model
 		var project models.Project
 
 		// validate json
@@ -40,6 +41,7 @@ func SetupRoutes(
 
 		// validation errors
 		if err != nil {
+			log.Println("Cannot unmarshal project, error: ", err.Error())
 			// generate validation errors response
 			response := helpers.GenerateValidationResponse(err)
 
@@ -51,7 +53,7 @@ func SetupRoutes(
 		// default http status code = 200
 		code := http.StatusOK
 
-		// save contact & get it's response
+		// save project & get it's response
 		response := services.CreateProject(&project, *projectRepository, *constructionJobPropertiesRepository)
 
 		// save contact failed
@@ -105,6 +107,20 @@ func SetupRoutes(
 		code := http.StatusOK
 
 		response := services.DeleteProjectById(id, *projectRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
+	route.GET("/getProjectJobs/:projectId", func(context *gin.Context) {
+		projectId := context.Param("projectId")
+
+		code := http.StatusOK
+
+		response := services.FindJobsByProjectId(projectId, *projectJobRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
