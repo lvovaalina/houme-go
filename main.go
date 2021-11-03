@@ -19,7 +19,7 @@ func main() {
 	}
 
 	// database configs
-	//dbUser, dbPassword, dbName := "postgres", "l8397040", "houmly"
+	//dbHost, dbUser, dbPassword, dbName := "localhost", "postgres", "l8397040", "houmly"
 
 	dbHost, dbUser, dbPassword, dbName :=
 		"ec2-52-22-81-147.compute-1.amazonaws.com",
@@ -43,15 +43,13 @@ func main() {
 	}
 
 	// migration
-
 	db.AutoMigrate(&models.Property{})
 	db.AutoMigrate(&models.Job{})
 	db.AutoMigrate(&models.ConstructionJobProperty{})
+
 	db.AutoMigrate(&models.ProjectJob{})
 	db.AutoMigrate(&models.ProjectProperty{})
 	db.AutoMigrate(&models.Project{})
-
-	//defer db.Close()
 
 	projectRepository := repositories.NewProjectRepository(db)
 	propertiesRepository := repositories.NewPropertyRepository(db)
