@@ -14,5 +14,7 @@ type Job struct {
 	InteriorMaterial   string
 	Required           bool
 	PropertyCode       string
+	InParallel         bool
+	ParallelGroupCode  string
 	JobCode            string `gorm:"unique,index"`
 }

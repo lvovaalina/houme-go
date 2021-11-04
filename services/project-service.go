@@ -42,12 +42,12 @@ func CreateProject(
 	var projectCost int
 	var projectDuration int
 	for _, j := range projectJobsCalculated {
-		projectDuration += j.ConstructionDurationInDays
 		projectCost += int(j.ConstructionCost)
+		projectDuration += j.ConstructionDurationInDays
 	}
 
-	project.ConstructionDuration = projectDuration
-	project.ConstructionCost = projectCost
+	project.ConstructionCost = projectDuration
+	project.ConstructionDuration = helpers.CalculateProjectDuration(project.ProjectJobs)
 
 	operationResult := repository.Save(project)
 
@@ -75,7 +75,6 @@ func UpdateProjectById(
 	}
 	log.Println("Succsessfully retrieved project with id: ", id)
 	existingProject := existingProjectResponse.Data.(*models.Project)
-	log.Println(existingProject)
 
 	existingProject.Name = project.Name
 	existingProject.BucketName = project.BucketName
@@ -123,16 +122,15 @@ func UpdateProjectById(
 	}
 
 	var projectCost int
-	var projectDuration int
 	for _, j := range projectJobsCalculated {
-		projectDuration += j.ConstructionDurationInDays
 		projectCost += int(j.ConstructionCost)
 	}
 
-	existingProject.ConstructionDuration = projectDuration
 	existingProject.ConstructionCost = projectCost
 	existingProject.ProjectJobs = project.ProjectJobs
 	existingProject.ProjectProperties = project.ProjectProperties
+
+	existingProject.ConstructionDuration = helpers.CalculateProjectDuration(project.ProjectJobs)
 
 	operationResult := repository.Save(existingProject)
 
