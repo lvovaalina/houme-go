@@ -41,11 +41,8 @@ func CalculateCostDurationForProjectJobs(
 		constrWorkNumber := calculateWorkers(jobProp, project.ConstructionWorkersNumber)
 
 		var constrDur float32
-
-		log.Println("Constr Fix Dur", jobProp.ConstructionFixDurationInHours)
 		if jobProp.ConstructionFixDurationInHours > 0.0 {
 			constrDur = jobProp.ConstructionFixDurationInHours
-			log.Println("Constr Fix Dur", jobProp.ConstructionFixDurationInHours)
 		} else {
 			constrDur = calculateDuration(
 				jobValue, jobProp.ConstructionSpeed, constrWorkNumber)
@@ -53,9 +50,9 @@ func CalculateCostDurationForProjectJobs(
 
 		constrDurInHours := int(math.Round(float64(constrDur)))
 		constrDurInDays := int(math.Round(float64(constrDurInHours) / workingHoursInDay))
-
-		log.Println("Job Code: ", job.JobCode,
-			",Work Num: ", constrWorkNumber, ", Dur: ", constrDur)
+		if (constrDurInHours % workingHoursInDay) > 0 {
+			constrDurInDays += 1
+		}
 
 		calcJob := JobCalculations{
 			ConstructionWorkers:         constrWorkNumber,
@@ -69,6 +66,46 @@ func CalculateCostDurationForProjectJobs(
 		calcProjectJobs = append(calcProjectJobs, calcJob)
 	}
 	return calcProjectJobs
+}
+
+func CalculateProjectDuration(projectJobs []models.ProjectJob) int {
+	var projectDuration int
+	for _, j := range projectJobs {
+		if !j.Job.InParallel {
+			projectDuration += j.ConstructionDurationInDays
+		}
+	}
+
+	log.Println("Project duration without par: ", projectDuration)
+
+	parGroupMap := map[string][]int{}
+	for _, job := range projectJobs {
+		if job.Job.InParallel {
+			if _, ok := parGroupMap[job.Job.ParallelGroupCode]; ok {
+				parGroupMap[job.Job.ParallelGroupCode] = append(parGroupMap[job.Job.ParallelGroupCode], job.ConstructionDurationInDays)
+			} else {
+				parGroupMap[job.Job.ParallelGroupCode] = []int{job.ConstructionDurationInDays}
+			}
+		}
+	}
+
+	log.Println(parGroupMap)
+
+	for _, group := range parGroupMap {
+		projectDuration += findMax(group)
+	}
+
+	return projectDuration
+}
+
+func findMax(a []int) int {
+	max := a[0]
+	for _, value := range a {
+		if value > max {
+			max = value
+		}
+	}
+	return max
 }
 
 func calculateWorkers(jobProperties models.ConstructionJobProperty, constructionWorkersNumber string) int {
