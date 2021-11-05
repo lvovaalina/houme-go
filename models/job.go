@@ -7,6 +7,7 @@ type Job struct {
 	JobId              int    `gorm:"primary_key;autoIncrement"`
 	JobName            string `gorm:"unique"`
 	StageName          string
+	SubStageName       string
 	WallMaterial       string
 	FinishMaterial     string
 	FoundationMaterial string
