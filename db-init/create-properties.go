@@ -21,13 +21,13 @@ type Job struct {
 	JobName            string `gorm:"unique"`
 	JobCode            string `gorm:"unique,index"`
 	StageName          string
+	SubStageName       string
 	PropertyCode       string
 	WallMaterial       string
 	FinishMaterial     string
 	FoundationMaterial string
 	RoofingMaterial    string
 	InteriorMaterial   string
-	GroupName          string
 	InParallel         bool
 	ParallelGroupCode  string
 	Required           bool
@@ -89,47 +89,47 @@ func main() {
 	}
 
 	var jobs = []Job{
-		{JobCode: "rem-fert-lay", JobName: "Removal of the fertile layer", StageName: "Excavation", PropertyCode: "FA", Required: true},
-		{JobCode: "ax-mark", JobName: "Axis markings", StageName: "Excavation", PropertyCode: "FA", Required: true},
-		{JobCode: "pile-pour", JobName: "Pile pouring", StageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Pile", Required: false},
-		{JobCode: "pile-shr-1", FixDuration: true, JobName: "Pile Shrinkage 1", StageName: "Foundation", FoundationMaterial: "Pile", Required: false},
-		{JobCode: "pile-grill", JobName: "Pile Grillage", StageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Pile", Required: false},
-		{JobCode: "pile-shr-2", InParallel: true, ParallelGroupCode: "par-group-1", FixDuration: true, JobName: "Pile Shrinkage 2", StageName: "Foundation", FoundationMaterial: "Pile", Required: false},
-		{JobCode: "ribbon-dig", JobName: "Ribbon Digging", StageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Ribbon", Required: false},
-		{JobCode: "ribbon-tying-formwork", JobName: "Ribbon Tying reinforcement + formwork", StageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Ribbon", Required: false},
-		{JobCode: "ribbon-pour", JobName: "Ribbon Pouring tape", StageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Ribbon", Required: false},
-		{JobCode: "ribbon-shr-3", InParallel: true, ParallelGroupCode: "par-group-1", JobName: "Ribbon Shrinkage 3", StageName: "Foundation", FoundationMaterial: "Ribbon", Required: false},
-		{JobCode: "plate-exv", JobName: "Plate Excavation", StageName: "Foundation", PropertyCode: "FV", FoundationMaterial: "Plate", Required: false},
-		{JobCode: "plate-backfl-grvl-ramr", JobName: "Plate Backfilling ASG + gravel + rammer", StageName: "Foundation", PropertyCode: "FV", FoundationMaterial: "Plate", Required: false},
-		{JobCode: "plate-styrofoam-foil-form-reinf", JobName: "Plate Styrofoam, foil, formwork + reinforcement", StageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Plate", Required: false},
-		{JobCode: "plate-fill", JobName: "Plate Fill", StageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Plate", Required: false},
-		{JobCode: "plate-shr-4", InParallel: true, ParallelGroupCode: "par-group-1", FixDuration: true, JobName: "Plate Shrinkage 4", StageName: "Foundation", FoundationMaterial: "Plate", Required: false},
-		{JobCode: "backfl-earth", InParallel: true, ParallelGroupCode: "par-group-1", JobName: "Backfilling of the earth", StageName: "Foundation", PropertyCode: "FA", Required: true},
-		{JobCode: "commun", InParallel: true, ParallelGroupCode: "par-group-1", FixDuration: true, JobName: "Communications (piping)", StageName: "Foundation", Required: true},
-		{JobCode: "foam-blck", JobName: "Foam block", StageName: "Walls", PropertyCode: "WV", WallMaterial: "Foam block", Required: false},
-		{JobCode: "brick", JobName: "Brick", StageName: "Walls", PropertyCode: "WV", WallMaterial: "Brick", Required: false},
-		{JobCode: "clt", JobName: "CLT", StageName: "Walls", PropertyCode: "FA", WallMaterial: "CLT", Required: false},
-		{JobCode: "framt", JobName: "Frame", StageName: "Walls", PropertyCode: "WN", WallMaterial: "Frame", Required: false},
-		{JobCode: "roof-frame", JobName: "Roof frame", StageName: "Roof", PropertyCode: "RA", Required: true},
-		{JobCode: "fold", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Fold", StageName: "Roof", PropertyCode: "RA", RoofingMaterial: "Fold", Required: false},
-		{JobCode: "soft-roof", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Soft roof", StageName: "Roof", PropertyCode: "RA", RoofingMaterial: "Soft roof", Required: false},
-		{JobCode: "roof-tiles", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Roof tiles (metal/soft)", StageName: "Roof", PropertyCode: "RA", RoofingMaterial: "Roof tiles", Required: false},
-		{JobCode: "wind-windsills", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Windows and windowsills", StageName: "Windows and windowsills", PropertyCode: "WWN", Required: true},
-		{JobCode: "warming", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Warming", StageName: "Warming", PropertyCode: "EFA", Required: true},
-		{JobCode: "floor-sys", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Subfloor/Floor System", StageName: "Subfloor/Floor System", PropertyCode: "FA", Required: true},
-		{JobCode: "stairs", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Stairs", StageName: "Stairs", PropertyCode: "SN", Required: true},
-		{JobCode: "plaster", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Plaster", StageName: "Exterior decoration of the house", PropertyCode: "WV", FinishMaterial: "Plaster", Required: false},
-		{JobCode: "ventfacade", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Ventfacade", StageName: "Exterior decoration of the house", PropertyCode: "WV", FinishMaterial: "Ventfacade", Required: false},
-		{JobCode: "floor", InParallel: true, ParallelGroupCode: "par-group-4", JobName: "Floor", StageName: "Floor", PropertyCode: "TFA", Required: true},
-		{JobCode: "elecrt-wiring", InParallel: true, ParallelGroupCode: "par-group-4", JobName: "Electrical wiring", StageName: "Electrical wiring", PropertyCode: "TFA", Required: true},
-		{JobCode: "plumbing", InParallel: true, ParallelGroupCode: "par-group-4", JobName: "Plumbing", StageName: "Plumbing", PropertyCode: "TFA", Required: true},
-		{JobCode: "plast-paint", InParallel: true, ParallelGroupCode: "par-group-5", JobName: "Plaster + Painting", StageName: "Interior decoration of the house", PropertyCode: "WV", InteriorMaterial: "Plaster + Painting", Required: false},
-		{JobCode: "tile", InParallel: true, ParallelGroupCode: "par-group-5", JobName: "Tile", StageName: "Interior decoration of the house", PropertyCode: "TA", InteriorMaterial: "Tile", Required: false},
-		{JobCode: "doors", InParallel: true, ParallelGroupCode: "par-group-5", JobName: "Doors", StageName: "Doors", PropertyCode: "DN", Required: true},
-		{JobCode: "kitchen-assbly-eq-inst", InParallel: true, ParallelGroupCode: "par-group-6", JobName: "Kitchen assembly, equipment installation", StageName: "Kitchen assembly, equipment installation", PropertyCode: "KN", Required: true},
-		{JobCode: "light-switches", InParallel: true, ParallelGroupCode: "par-group-6", FixDuration: true, JobName: "Lighting, switches", StageName: "Lighting, switches", Required: true},
-		{JobCode: "furnish", InParallel: true, ParallelGroupCode: "par-group-6", FixDuration: true, JobName: "Furnishing", StageName: "Furnishing", Required: true},
-		{JobCode: "comiss-works", FixDuration: true, JobName: "Commissioning works", StageName: "Commissioning works", Required: true},
+		{JobCode: "rem-fert-lay", StageName: "Excavation", JobName: "Removal of the fertile layer", SubStageName: "Excavation", PropertyCode: "FA", Required: true},
+		{JobCode: "ax-mark", StageName: "Excavation", JobName: "Axis markings", SubStageName: "Excavation", PropertyCode: "FA", Required: true},
+		{JobCode: "pile-pour", StageName: "Foundation", JobName: "Pile pouring", SubStageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Pile", Required: false},
+		{JobCode: "pile-shr-1", StageName: "Foundation", FixDuration: true, JobName: "Pile Shrinkage 1", SubStageName: "Foundation", FoundationMaterial: "Pile", Required: false},
+		{JobCode: "pile-grill", StageName: "Foundation", JobName: "Pile Grillage", SubStageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Pile", Required: false},
+		{JobCode: "pile-shr-2", StageName: "Foundation", InParallel: true, ParallelGroupCode: "par-group-1", FixDuration: true, JobName: "Pile Shrinkage 2", SubStageName: "Foundation", FoundationMaterial: "Pile", Required: false},
+		{JobCode: "ribbon-dig", StageName: "Foundation", JobName: "Ribbon Digging", SubStageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Ribbon", Required: false},
+		{JobCode: "ribbon-tying-formwork", StageName: "Foundation", JobName: "Ribbon Tying reinforcement + formwork", SubStageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Ribbon", Required: false},
+		{JobCode: "ribbon-pour", StageName: "Foundation", JobName: "Ribbon Pouring tape", SubStageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Ribbon", Required: false},
+		{JobCode: "ribbon-shr-3", StageName: "Foundation", InParallel: true, ParallelGroupCode: "par-group-1", JobName: "Ribbon Shrinkage 3", SubStageName: "Foundation", FoundationMaterial: "Ribbon", Required: false},
+		{JobCode: "plate-exv", StageName: "Foundation", JobName: "Plate Excavation", SubStageName: "Foundation", PropertyCode: "FV", FoundationMaterial: "Plate", Required: false},
+		{JobCode: "plate-backfl-grvl-ramr", StageName: "Foundation", JobName: "Plate Backfilling ASG + gravel + rammer", SubStageName: "Foundation", PropertyCode: "FV", FoundationMaterial: "Plate", Required: false},
+		{JobCode: "plate-styrofoam-foil-form-reinf", StageName: "Foundation", JobName: "Plate Styrofoam, foil, formwork + reinforcement", SubStageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Plate", Required: false},
+		{JobCode: "plate-fill", StageName: "Foundation", JobName: "Plate Fill", SubStageName: "Foundation", PropertyCode: "FA", FoundationMaterial: "Plate", Required: false},
+		{JobCode: "plate-shr-4", StageName: "Foundation", InParallel: true, ParallelGroupCode: "par-group-1", FixDuration: true, JobName: "Plate Shrinkage 4", SubStageName: "Foundation", FoundationMaterial: "Plate", Required: false},
+		{JobCode: "backfl-earth", StageName: "Foundation", InParallel: true, ParallelGroupCode: "par-group-1", JobName: "Backfilling of the earth", SubStageName: "Foundation", PropertyCode: "FA", Required: true},
+		{JobCode: "commun", StageName: "Foundation", InParallel: true, ParallelGroupCode: "par-group-1", FixDuration: true, JobName: "Communications (piping)", SubStageName: "Foundation", Required: true},
+		{JobCode: "foam-blck", StageName: "Box", JobName: "Foam block", SubStageName: "Walls", PropertyCode: "WV", WallMaterial: "Foam block", Required: false},
+		{JobCode: "brick", StageName: "Box", JobName: "Brick", SubStageName: "Walls", PropertyCode: "WV", WallMaterial: "Brick", Required: false},
+		{JobCode: "clt", StageName: "Box", JobName: "CLT", SubStageName: "Walls", PropertyCode: "FA", WallMaterial: "CLT", Required: false},
+		{JobCode: "framt", StageName: "Box", JobName: "Frame", SubStageName: "Walls", PropertyCode: "WN", WallMaterial: "Frame", Required: false},
+		{JobCode: "roof-frame", StageName: "Box", JobName: "Roof frame", SubStageName: "Roof", PropertyCode: "RA", Required: true},
+		{JobCode: "fold", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Fold", SubStageName: "Roof", PropertyCode: "RA", RoofingMaterial: "Fold", Required: false},
+		{JobCode: "soft-roof", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Soft roof", SubStageName: "Roof", PropertyCode: "RA", RoofingMaterial: "Soft roof", Required: false},
+		{JobCode: "roof-tiles", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Roof tiles (metal/soft)", SubStageName: "Roof", PropertyCode: "RA", RoofingMaterial: "Roof tiles", Required: false},
+		{JobCode: "wind-windsills", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Windows and windowsills", SubStageName: "Windows and windowsills", PropertyCode: "WWN", Required: true},
+		{JobCode: "warming", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Warming", SubStageName: "Warming", PropertyCode: "EFA", Required: true},
+		{JobCode: "floor-sys", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Subfloor/Floor System", SubStageName: "Subfloor/Floor System", PropertyCode: "FA", Required: true},
+		{JobCode: "stairs", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Stairs", SubStageName: "Stairs", PropertyCode: "SN", Required: true},
+		{JobCode: "plaster", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Plaster", SubStageName: "Exterior decoration of the house", PropertyCode: "WV", FinishMaterial: "Plaster", Required: false},
+		{JobCode: "ventfacade", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Ventfacade", SubStageName: "Exterior decoration of the house", PropertyCode: "WV", FinishMaterial: "Ventfacade", Required: false},
+		{JobCode: "floor", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-4", JobName: "Floor", SubStageName: "Floor", PropertyCode: "TFA", Required: true},
+		{JobCode: "elecrt-wiring", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-4", JobName: "Electrical wiring", SubStageName: "Electrical wiring", PropertyCode: "TFA", Required: true},
+		{JobCode: "plumbing", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-4", JobName: "Plumbing", SubStageName: "Plumbing", PropertyCode: "TFA", Required: true},
+		{JobCode: "plast-paint", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-5", JobName: "Plaster + Painting", SubStageName: "Interior decoration of the house", PropertyCode: "WV", InteriorMaterial: "Plaster + Painting", Required: false},
+		{JobCode: "tile", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-5", JobName: "Tile", SubStageName: "Interior decoration of the house", PropertyCode: "TA", InteriorMaterial: "Tile", Required: false},
+		{JobCode: "doors", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-5", JobName: "Doors", SubStageName: "Doors", PropertyCode: "DN", Required: true},
+		{JobCode: "kitchen-assbly-eq-inst", StageName: "Furnishing", InParallel: true, ParallelGroupCode: "par-group-6", JobName: "Kitchen assembly, equipment installation", SubStageName: "Kitchen assembly, equipment installation", PropertyCode: "KN", Required: true},
+		{JobCode: "light-switches", StageName: "Furnishing", InParallel: true, ParallelGroupCode: "par-group-6", FixDuration: true, JobName: "Lighting, switches", SubStageName: "Lighting, switches", Required: true},
+		{JobCode: "furnish", StageName: "Furnishing", InParallel: true, ParallelGroupCode: "par-group-6", FixDuration: true, JobName: "Furnishing", SubStageName: "Furnishing", Required: true},
+		{JobCode: "comiss-works", StageName: "Commissioning works", FixDuration: true, JobName: "Commissioning works", SubStageName: "Commissioning works", Required: true},
 	}
 
 	var constructionProperties = []ConstructionJobProperty{
