@@ -10,7 +10,7 @@ import (
 func ConnectToDB(dbHost string, dbUser string, dbPassword string, dbName string) (*gorm.DB, error) {
 	//sslmode=disable
 	var connectionString = fmt.Sprintf(
-		"host=%s port=5432 user=%s dbname=%s password=%s sslmode=disable",
+		"host=%s port=5432 user=%s dbname=%s password=%s",
 		dbHost, dbUser, dbName, dbPassword,
 	)
 
