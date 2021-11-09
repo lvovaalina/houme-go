@@ -16,11 +16,33 @@ func NewConstructionJobPropertyRepository(db *gorm.DB) *ConstructionJobPropertyR
 func (r *ConstructionJobPropertyRepository) FindPropertiesByCompanyName(companyName string) RepositoryResult {
 	var properties []models.ConstructionJobProperty
 
-	err := r.db.Where("company_name = ?", companyName).Find(&properties).Error
+	err := r.db.Where("company_name = ?", companyName).Preload("Job").Find(&properties).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}
 	}
 
 	return RepositoryResult{Result: &properties}
+}
+
+func (r *ConstructionJobPropertyRepository) FindJobPropertyById(id string) RepositoryResult {
+	var property models.ConstructionJobProperty
+
+	err := r.db.Find(&property, id).Error
+
+	if err != nil {
+		return RepositoryResult{Error: err}
+	}
+
+	return RepositoryResult{Result: &property}
+}
+
+func (r *ConstructionJobPropertyRepository) Save(jobProperty *models.ConstructionJobProperty) RepositoryResult {
+	err := r.db.Save(jobProperty).Error
+
+	if err != nil {
+		return RepositoryResult{Error: err}
+	}
+
+	return RepositoryResult{Result: jobProperty}
 }
