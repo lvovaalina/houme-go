@@ -26,7 +26,7 @@ func CalculateCostDurationForProjectJobs(
 
 	jobPropMap := map[string]models.ConstructionJobProperty{}
 	for _, prop := range *constructionProperties {
-		jobPropMap[prop.JobCode] = prop
+		jobPropMap[prop.JobID] = prop
 	}
 
 	propertiesMap := map[string]float32{}
@@ -54,12 +54,14 @@ func CalculateCostDurationForProjectJobs(
 			constrDurInDays += 1
 		}
 
+		constrCost := math.Round(float64(float32(constrDurInHours) * jobProp.ConstructionCost))
+
 		calcJob := JobCalculations{
 			ConstructionWorkers:         constrWorkNumber,
 			ConstructionDuration:        constrDur,
 			ConstructionDurationInHours: constrDurInHours,
 			ConstructionDurationInDays:  constrDurInDays,
-			ConstructionCost:            0,
+			ConstructionCost:            float32(constrCost),
 			JobCode:                     job.JobCode,
 		}
 

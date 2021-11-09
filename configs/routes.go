@@ -172,5 +172,45 @@ func SetupRoutes(
 		context.JSON(code, response)
 	})
 
+	route.GET("/getJobProperties", func(context *gin.Context) {
+		code := http.StatusOK
+
+		response := services.FindJobProperties(*constructionJobPropertiesRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
+	route.PUT("/updateJobProperty/:id", func(context *gin.Context) {
+		id := context.Param("id")
+
+		var jobProperty models.ConstructionJobProperty
+
+		err := context.ShouldBindJSON(&jobProperty)
+
+		// validation errors
+		if err != nil {
+			response := helpers.GenerateValidationResponse(err)
+
+			context.JSON(http.StatusBadRequest, response)
+
+			return
+		}
+
+		code := http.StatusOK
+
+		response := services.UpdateJobPropertyById(
+			id, jobProperty, *constructionJobPropertiesRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
 	return route
 }

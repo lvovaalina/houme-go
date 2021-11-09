@@ -13,7 +13,7 @@ type ConstructionJobProperty struct {
 	MaxWorkers                     int
 	OptWorkers                     int
 	MinWorkers                     int
-	JobCode                        string
-	Job                            Job `gorm:"foreignKey:JobCode"`
+	JobID                          string
+	Job                            Job `gorm:"references:JobCode"`
 	CompanyName                    string
 }
