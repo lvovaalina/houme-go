@@ -14,8 +14,10 @@ type Job struct {
 	RoofingMaterial    string
 	InteriorMaterial   string
 	Required           bool
-	PropertyCode       string
 	InParallel         bool
 	ParallelGroupCode  string
-	JobCode            string `gorm:"unique,index"`
+	JobCode            string `gorm:"unique"`
+
+	PropertyID *string
+	Property   Property `gorm:"references:PropertyCode"`
 }
