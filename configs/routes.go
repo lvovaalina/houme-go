@@ -19,6 +19,7 @@ func SetupRoutes(
 	propertiesRepository *repositories.PropertyRepository,
 	jobsRepository *repositories.JobRepository,
 	constructionJobPropertiesRepository *repositories.ConstructionJobPropertyRepository,
+	constructionJobMaterialsRepository *repositories.ConstructionJobMaterialRepository,
 	projectJobRepository *repositories.ProjectJobRepository) *gin.Engine {
 	route := gin.Default()
 
@@ -206,6 +207,92 @@ func SetupRoutes(
 			id, jobProperty, *constructionJobPropertiesRepository)
 
 		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
+	route.GET("/getJobMaterials", func(context *gin.Context) {
+		code := http.StatusOK
+
+		response := services.FindJobMaterials(*constructionJobMaterialsRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
+	route.PUT("/updateJobMaterial/:id", func(context *gin.Context) {
+		id := context.Param("id")
+
+		var jobMaterial models.ConstructionJobMaterial
+
+		err := context.ShouldBindJSON(&jobMaterial)
+
+		// validation errors
+		if err != nil {
+			response := helpers.GenerateValidationResponse(err)
+
+			context.JSON(http.StatusBadRequest, response)
+
+			return
+		}
+
+		code := http.StatusOK
+
+		response := services.UpdateJobMaterialById(
+			id, jobMaterial, *constructionJobMaterialsRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
+	route.DELETE("/deleteJobMaterial/:id", func(context *gin.Context) {
+		id := context.Param("id")
+
+		code := http.StatusOK
+
+		response := services.DeleteJobMaterialById(id, *constructionJobMaterialsRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
+	route.POST("/createMaterial", func(context *gin.Context) {
+		var material models.ConstructionJobMaterial
+
+		// validate json
+		err := context.ShouldBindJSON(&material)
+
+		// validation errors
+		if err != nil {
+			log.Println("Cannot unmarshal project, error: ", err.Error())
+			// generate validation errors response
+			response := helpers.GenerateValidationResponse(err)
+
+			context.JSON(http.StatusBadRequest, response)
+
+			return
+		}
+
+		// default http status code = 200
+		code := http.StatusOK
+
+		// save project & get it's response
+		response := services.CreateMaterial(&material, *constructionJobMaterialsRepository)
+
+		// save contact failed
+		if !response.Success {
+			// change http status code to 400
 			code = http.StatusBadRequest
 		}
 

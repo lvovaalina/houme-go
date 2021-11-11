@@ -11,9 +11,10 @@ const workingHoursInDay = 8
 
 type JobCalculations struct {
 	ConstructionWorkers int
-	ConstructionCost    float32
 
-	ConstructionDuration        float32
+	ConstructionCost     float32
+	ConstructionDuration float32
+
 	ConstructionDurationInHours int
 	ConstructionDurationInDays  int
 

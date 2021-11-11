@@ -16,7 +16,7 @@ func NewJobRepository(db *gorm.DB) *JobRepository {
 func (r *JobRepository) FindAll() RepositoryResult {
 	var jobs []models.Job
 
-	err := r.db.Find(&jobs).Error
+	err := r.db.Preload("Property").Find(&jobs).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}
