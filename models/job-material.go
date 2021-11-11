@@ -11,7 +11,5 @@ type ConstructionJobMaterial struct {
 	MaterialCost              float32
 	JobID                     string
 	Job                       Job `gorm:"references:JobCode"`
-	PropertyID                string
-	Property                  Property `gorm:"references:PropertyCode"`
 	CompanyName               string
 }

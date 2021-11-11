@@ -16,7 +16,7 @@ func NewConstructionJobMaterialRepository(db *gorm.DB) *ConstructionJobMaterialR
 func (r *ConstructionJobMaterialRepository) FindMaterials() RepositoryResult {
 	var materials []models.ConstructionJobMaterial
 
-	err := r.db.Preload("Job").Preload("Property").Find(&materials).Error
+	err := r.db.Preload("Job").Preload("Job.Property").Find(&materials).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}
