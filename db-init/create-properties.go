@@ -92,6 +92,10 @@ func main() {
 	db.AutoMigrate(&ConstructionJobProperty{})
 
 	var properties = []Property{
+		{PropertyName: "Rooms Number", PropertyUnit: "ps", PropertyCode: "RN"},
+		{PropertyName: "Points Number", PropertyUnit: "ps", PropertyCode: "PN"},
+		{PropertyName: "Outlet Number", PropertyUnit: "ps", PropertyCode: "ON"},
+		{PropertyName: "Pipes Length", PropertyUnit: "rm", PropertyCode: "PL"},
 		{PropertyName: "Foundation volume", PropertyUnit: "sq.m.", PropertyCode: "FV"},
 		{PropertyName: "Floor area at the base", PropertyUnit: "sq.m.", PropertyCode: "FA"},
 		{PropertyName: "Total floor area", PropertyUnit: "sq.m.", PropertyCode: "TFA"},
@@ -125,7 +129,7 @@ func main() {
 		{JobCode: "plate-fill", StageName: "Foundation", JobName: "Plate Fill", SubStageName: "Foundation", Property: Property{PropertyCode: "FA"}, FoundationMaterial: "Plate", Required: false},
 		{JobCode: "plate-shr-4", StageName: "Foundation", InParallel: true, ParallelGroupCode: "par-group-1", JobName: "Plate Shrinkage 4", SubStageName: "Foundation", FoundationMaterial: "Plate", Required: false},
 		{JobCode: "backfl-earth", StageName: "Foundation", InParallel: true, ParallelGroupCode: "par-group-1", JobName: "Backfilling of the earth", SubStageName: "Foundation", Property: Property{PropertyCode: "FA"}, Required: true},
-		{JobCode: "commun", StageName: "Foundation", InParallel: true, ParallelGroupCode: "par-group-1", JobName: "Communications (piping)", SubStageName: "Foundation", Required: true},
+		{JobCode: "commun", StageName: "Foundation", InParallel: true, ParallelGroupCode: "par-group-1", JobName: "Communications (piping)", SubStageName: "Foundation", Property: Property{PropertyCode: "PL"}, Required: true},
 		{JobCode: "foam-blck", StageName: "Box", JobName: "Foam block", SubStageName: "Walls", Property: Property{PropertyCode: "WV"}, WallMaterial: "Foam block", Required: false},
 		{JobCode: "brick", StageName: "Box", JobName: "Brick", SubStageName: "Walls", Property: Property{PropertyCode: "WV"}, WallMaterial: "Brick", Required: false},
 		{JobCode: "clt", StageName: "Box", JobName: "CLT", SubStageName: "Walls", Property: Property{PropertyCode: "FA"}, WallMaterial: "CLT", Required: false},
@@ -147,8 +151,9 @@ func main() {
 		{JobCode: "tile", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-5", JobName: "Tile", SubStageName: "Interior decoration of the house", Property: Property{PropertyCode: "TA"}, InteriorMaterial: "Tile", Required: false},
 		{JobCode: "doors", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-5", JobName: "Doors", SubStageName: "Doors", Property: Property{PropertyCode: "DN"}, Required: true},
 		{JobCode: "kitchen-assbly-eq-inst", StageName: "Furnishing", InParallel: true, ParallelGroupCode: "par-group-6", JobName: "Kitchen assembly, equipment installation", SubStageName: "Kitchen assembly, equipment installation", Property: Property{PropertyCode: "KN"}, Required: true},
-		{JobCode: "light-switches", StageName: "Furnishing", InParallel: true, ParallelGroupCode: "par-group-6", JobName: "Lighting, switches", SubStageName: "Lighting, switches", Required: true},
-		{JobCode: "furnish", StageName: "Furnishing", InParallel: true, ParallelGroupCode: "par-group-6", JobName: "Furnishing", SubStageName: "Furnishing", Required: true},
+		{JobCode: "light", StageName: "Furnishing", InParallel: true, ParallelGroupCode: "par-group-6", JobName: "Lighting", Property: Property{PropertyCode: "PN"}, SubStageName: "Lighting, switches", Required: true},
+		{JobCode: "switches", StageName: "Furnishing", InParallel: true, ParallelGroupCode: "par-group-6", JobName: "Switches", Property: Property{PropertyCode: "ON"}, SubStageName: "Lighting, switches", Required: true},
+		{JobCode: "furnish", StageName: "Furnishing", InParallel: true, ParallelGroupCode: "par-group-6", JobName: "Furnishing", Property: Property{PropertyCode: "RN"}, SubStageName: "Furnishing", Required: true},
 		{JobCode: "comiss-works", StageName: "Commissioning works", JobName: "Commissioning works", SubStageName: "Commissioning works", Required: true},
 	}
 
@@ -202,7 +207,8 @@ func main() {
 		{CompanyName: "Construction", Job: Job{JobCode: "doors"}, ConstructionSpeed: 0.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
 		{CompanyName: "Construction", Job: Job{JobCode: "kitchen-assbly-eq-inst"}, ConstructionSpeed: 0.03, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
 		{CompanyName: "Construction", Job: Job{JobCode: "plumbing"}, ConstructionSpeed: 3.33, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
-		{CompanyName: "Construction", Job: Job{JobCode: "light-switches"}, ConstructionFixDurationInHours: 32, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
+		{CompanyName: "Construction", Job: Job{JobCode: "light"}, ConstructionFixDurationInHours: 16, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
+		{CompanyName: "Construction", Job: Job{JobCode: "switches"}, ConstructionFixDurationInHours: 16, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
 		{CompanyName: "Construction", Job: Job{JobCode: "furnish"}, ConstructionFixDurationInHours: 64, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 6, OptWorkers: 4},
 		{CompanyName: "Construction", Job: Job{JobCode: "comiss-works"}, ConstructionFixDurationInHours: 48, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
 	}
