@@ -50,6 +50,7 @@ func (r *ProjectRepository) GetProjectById(id string) RepositoryResult {
 	var project models.Project
 	err := r.db.Preload("ProjectJobs").
 		Preload("ProjectJobs.Job").
+		Preload("ProjectJobs.Job.Property").
 		Preload("ProjectProperties").
 		Preload("ProjectProperties.Property").
 		First(&project, id).Error

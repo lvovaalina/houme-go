@@ -92,10 +92,6 @@ func main() {
 	db.AutoMigrate(&ConstructionJobProperty{})
 
 	var properties = []Property{
-		{PropertyName: "Rooms Number", PropertyUnit: "ps", PropertyCode: "RN"},
-		{PropertyName: "Points Number", PropertyUnit: "ps", PropertyCode: "PN"},
-		{PropertyName: "Outlet Number", PropertyUnit: "ps", PropertyCode: "ON"},
-		{PropertyName: "Pipes Length", PropertyUnit: "rm", PropertyCode: "PL"},
 		{PropertyName: "Foundation volume", PropertyUnit: "sq.m.", PropertyCode: "FV"},
 		{PropertyName: "Floor area at the base", PropertyUnit: "sq.m.", PropertyCode: "FA"},
 		{PropertyName: "Total floor area", PropertyUnit: "sq.m.", PropertyCode: "TFA"},
@@ -110,6 +106,10 @@ func main() {
 		{PropertyName: "Exterior finishing area", PropertyUnit: "sq.m.", PropertyCode: "EFA"},
 		{PropertyName: "Interior finishing area", PropertyUnit: "sq.m.", PropertyCode: "IFA"},
 		{PropertyName: "Tile area", PropertyUnit: "sq.m.", PropertyCode: "TA"},
+		{PropertyName: "Rooms Number", PropertyUnit: "ps", PropertyCode: "RN"},
+		{PropertyName: "Points Number", PropertyUnit: "ps", PropertyCode: "PN"},
+		{PropertyName: "Outlet Number", PropertyUnit: "ps", PropertyCode: "ON"},
+		{PropertyName: "Pipes Length", PropertyUnit: "rm", PropertyCode: "PL"},
 	}
 
 	var jobs = []Job{
