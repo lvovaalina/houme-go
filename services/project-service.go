@@ -31,7 +31,7 @@ func CreateProject(
 	}
 
 	for index, job := range project.ProjectJobs {
-		calJob := calcJobMap[job.JobCode]
+		calJob := calcJobMap[job.Job.JobCode]
 		(&project.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
 		(&project.ProjectJobs[index]).ConstructionDurationInDays = calJob.ConstructionDurationInDays
 		(&project.ProjectJobs[index]).ConstructionDurationInHours = calJob.ConstructionDurationInHours
@@ -113,7 +113,7 @@ func UpdateProjectById(
 	}
 
 	for index, job := range project.ProjectJobs {
-		calJob := calcJobMap[job.JobCode]
+		calJob := calcJobMap[job.Job.JobCode]
 		(&project.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
 		(&project.ProjectJobs[index]).ConstructionDurationInDays = calJob.ConstructionDurationInDays
 		(&project.ProjectJobs[index]).ConstructionDurationInHours = calJob.ConstructionDurationInHours

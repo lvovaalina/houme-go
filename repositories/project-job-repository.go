@@ -27,7 +27,7 @@ func (r *ProjectJobRepository) DeleteProjectJobsByProjectId(projectId int) Repos
 func (r *ProjectJobRepository) FindProjectJobsByProjectId(projectId string) RepositoryResult {
 	var jobs []models.ProjectJob
 
-	err := r.db.Where("project_refer = ?", projectId).Preload("Job").Find(&jobs).Error
+	err := r.db.Where("project_refer = ?", projectId).Preload("Job").Preload("Job.Property").Find(&jobs).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}

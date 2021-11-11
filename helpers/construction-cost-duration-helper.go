@@ -37,8 +37,8 @@ func CalculateCostDurationForProjectJobs(
 
 	var calcProjectJobs []JobCalculations
 	for _, job := range project.ProjectJobs {
-		jobProp := jobPropMap[job.JobCode]
-		jobValue := propertiesMap[job.PropertyCode]
+		jobProp := jobPropMap[job.Job.JobCode]
+		jobValue := propertiesMap[job.Job.Property.PropertyCode]
 		constrWorkNumber := calculateWorkers(jobProp, project.ConstructionWorkersNumber)
 
 		var constrDur float32
@@ -63,7 +63,7 @@ func CalculateCostDurationForProjectJobs(
 			ConstructionDurationInHours: constrDurInHours,
 			ConstructionDurationInDays:  constrDurInDays,
 			ConstructionCost:            float32(constrCost),
-			JobCode:                     job.JobCode,
+			JobCode:                     job.Job.JobCode,
 		}
 
 		calcProjectJobs = append(calcProjectJobs, calcJob)

@@ -13,9 +13,6 @@ type ProjectJob struct {
 	ConstructionDurationInHours int
 	ConstructionDurationInDays  int
 
-	JobCode      string
-	PropertyCode string
-
 	ProjectRefer int
 
 	JobId int
