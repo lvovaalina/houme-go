@@ -20,7 +20,8 @@ func SetupRoutes(
 	jobsRepository *repositories.JobRepository,
 	constructionJobPropertiesRepository *repositories.ConstructionJobPropertyRepository,
 	constructionJobMaterialsRepository *repositories.ConstructionJobMaterialRepository,
-	projectJobRepository *repositories.ProjectJobRepository) *gin.Engine {
+	projectJobRepository *repositories.ProjectJobRepository,
+	projectPropertyRepository *repositories.ProjectPropertyRepository) *gin.Engine {
 	route := gin.Default()
 
 	route.Use(gin.Logger())
@@ -164,7 +165,8 @@ func SetupRoutes(
 
 		response := services.UpdateProjectById(
 			id, &project, *projectRepository,
-			*constructionJobPropertiesRepository, *projectJobRepository)
+			*constructionJobPropertiesRepository,
+			*projectJobRepository, *projectPropertyRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
