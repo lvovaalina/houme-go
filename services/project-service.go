@@ -65,9 +65,18 @@ func UpdateProjectById(
 	project *models.Project,
 	repository repositories.ProjectRepository,
 	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
-	projectJobRepository repositories.ProjectJobRepository) dtos.Response {
+	projectJobRepository repositories.ProjectJobRepository,
+	projectPropertyRepository repositories.ProjectPropertyRepository) dtos.Response {
 
 	log.Println("Start update project with id: ", id)
+
+	projectPropertyDeleteResult := projectPropertyRepository.DeleteProjectPropertiesByProjectId(id)
+	if projectPropertyDeleteResult.Error != nil {
+		log.Println("Failed to remove properties for project with id: ", id)
+		return dtos.Response{Success: false, Message: projectPropertyDeleteResult.Error.Error()}
+	}
+	log.Println("Succsessfully removed project properties for project with id: ", id)
+
 	existingProjectResponse := GetProjectById(id, repository)
 
 	if !existingProjectResponse.Success {
@@ -90,7 +99,7 @@ func UpdateProjectById(
 
 	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(existingProject.ProjectId)
 	if projectJobDeleteResult.Error != nil {
-		log.Println("Failed to remove properties for project with id: ", id)
+		log.Println("Failed to remove jobs for project with id: ", id)
 		return dtos.Response{Success: false, Message: projectJobDeleteResult.Error.Error()}
 	}
 

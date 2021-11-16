@@ -58,11 +58,12 @@ func main() {
 	constructionJobPropertyRepository := repositories.NewConstructionJobPropertyRepository(db)
 	constructionJobMaterialRepository := repositories.NewConstructionJobMaterialRepository(db)
 	projectJobRepository := repositories.NewProjectJobRepository(db)
+	projectPropertyRepository := repositories.NewProjectPropertyRepository(db)
 
 	route := configs.SetupRoutes(
 		projectRepository, propertiesRepository, jobsRepository,
 		constructionJobPropertyRepository, constructionJobMaterialRepository,
-		projectJobRepository)
+		projectJobRepository, projectPropertyRepository)
 
 	route.Run(":" + port)
 }
