@@ -154,7 +154,8 @@ func SetupRoutes(
 
 		// validation errors
 		if err != nil {
-			response := helpers.GenerateValidationResponse(err)
+			log.Println("ERROR: ", err.Error())
+			response := err.Error()
 
 			context.JSON(http.StatusBadRequest, response)
 
@@ -196,6 +197,7 @@ func SetupRoutes(
 
 		// validation errors
 		if err != nil {
+			log.Println(err.Error())
 			response := helpers.GenerateValidationResponse(err)
 
 			context.JSON(http.StatusBadRequest, response)
@@ -206,7 +208,8 @@ func SetupRoutes(
 		code := http.StatusOK
 
 		response := services.UpdateJobPropertyById(
-			id, jobProperty, *constructionJobPropertiesRepository)
+			id, jobProperty, *constructionJobPropertiesRepository,
+			*projectRepository, *projectJobRepository, *projectPropertyRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest

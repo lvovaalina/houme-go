@@ -92,8 +92,6 @@ func CalculateProjectDuration(projectJobs []models.ProjectJob) int {
 		}
 	}
 
-	log.Println(parGroupMap)
-
 	for _, group := range parGroupMap {
 		projectDuration += findMax(group)
 	}
