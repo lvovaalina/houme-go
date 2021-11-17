@@ -16,7 +16,7 @@ func NewConstructionJobPropertyRepository(db *gorm.DB) *ConstructionJobPropertyR
 func (r *ConstructionJobPropertyRepository) FindPropertiesByCompanyName(companyName string) RepositoryResult {
 	var properties []models.ConstructionJobProperty
 
-	err := r.db.Where("company_name = ?", companyName).Preload("Job").Preload("Job.Property").Find(&properties).Error
+	err := r.db.Where("company_name = ?", companyName).Order("ID").Preload("Job").Preload("Job.Property").Find(&properties).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}

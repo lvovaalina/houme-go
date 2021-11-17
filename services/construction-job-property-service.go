@@ -31,7 +31,10 @@ func FindJobPropertyById(id string, repository repositories.ConstructionJobPrope
 }
 
 func UpdateJobPropertyById(id string, jobProperty models.ConstructionJobProperty,
-	repository repositories.ConstructionJobPropertyRepository) dtos.Response {
+	repository repositories.ConstructionJobPropertyRepository,
+	projectRepository repositories.ProjectRepository,
+	projectJobRepository repositories.ProjectJobRepository,
+	projectPropertyRepository repositories.ProjectPropertyRepository) dtos.Response {
 
 	existingPropertyResponse := FindJobPropertyById(id, repository)
 
@@ -54,6 +57,8 @@ func UpdateJobPropertyById(id string, jobProperty models.ConstructionJobProperty
 	if operationResult.Error != nil {
 		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
 	}
+
+	go UpdateProjectsJobs(projectRepository, repository, projectJobRepository, projectPropertyRepository)
 
 	return dtos.Response{Success: true, Data: operationResult.Result}
 }

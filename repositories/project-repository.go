@@ -36,6 +36,22 @@ func (r *ProjectRepository) FindAll() RepositoryResult {
 	return RepositoryResult{Result: &properties}
 }
 
+func (r *ProjectRepository) FindAllProjects() RepositoryResult {
+	var projects []models.Project
+
+	err := r.db.Preload("ProjectJobs").
+		Preload("ProjectJobs.Job").
+		Preload("ProjectJobs.Job.Property").
+		Preload("ProjectProperties").
+		Preload("ProjectProperties.Property").Find(&projects).Error
+
+	if err != nil {
+		return RepositoryResult{Error: err}
+	}
+
+	return RepositoryResult{Result: &projects}
+}
+
 func (r *ProjectRepository) DeleteProjectById(id string) RepositoryResult {
 	err := r.db.Delete(&models.Project{}, id).Error
 
