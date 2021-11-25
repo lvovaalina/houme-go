@@ -2,7 +2,9 @@ package services
 
 import (
 	"log"
+	"strconv"
 
+	"bitbucket.org/houmeteam/houme-go/converters"
 	"bitbucket.org/houmeteam/houme-go/dtos"
 	"bitbucket.org/houmeteam/houme-go/helpers"
 	"bitbucket.org/houmeteam/houme-go/models"
@@ -13,13 +15,27 @@ import (
 func CreateProject(
 	project *models.Project,
 	repository repositories.ProjectRepository,
-	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository) dtos.Response {
+	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
+	jobsRepository repositories.JobRepository) dtos.Response {
 
 	constructionPropertiesRepositoryResult := constructionJobPropertyRepository.
 		FindPropertiesByCompanyName(project.ConstructionCompanyName)
 
 	if constructionPropertiesRepositoryResult.Error != nil {
 		return dtos.Response{Success: false, Message: constructionPropertiesRepositoryResult.Error.Error()}
+	}
+
+	projectJobsRepositoryResult := jobsRepository.FindProjectJobs(
+		project.WallMaterial,
+		project.FoundationMaterial,
+		project.RoofingMaterial,
+		project.FinishMaterial)
+	if projectJobsRepositoryResult.Error != nil {
+		return dtos.Response{Success: false, Message: projectJobsRepositoryResult.Error.Error()}
+	}
+
+	for _, job := range *projectJobsRepositoryResult.Result.(*[]models.Job) {
+		project.ProjectJobs = append(project.ProjectJobs, converters.ConvertJobToProjectJob(job))
 	}
 
 	projectJobsCalculated := helpers.CalculateCostDurationForProjectJobs(
@@ -30,6 +46,8 @@ func CreateProject(
 	for _, prop := range projectJobsCalculated {
 		calcJobMap[prop.JobCode] = prop
 	}
+
+	log.Println("JOBSSS CR ", len(project.ProjectJobs))
 
 	for index, job := range project.ProjectJobs {
 		calJob := calcJobMap[job.Job.JobCode]
@@ -67,7 +85,8 @@ func UpdateProjectById(
 	repository repositories.ProjectRepository,
 	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
 	projectJobRepository repositories.ProjectJobRepository,
-	projectPropertyRepository repositories.ProjectPropertyRepository) dtos.Response {
+	projectPropertyRepository repositories.ProjectPropertyRepository,
+	jobsRepository repositories.JobRepository) dtos.Response {
 
 	log.Println("Start update project with id: ", id)
 
@@ -77,6 +96,14 @@ func UpdateProjectById(
 		return dtos.Response{Success: false, Message: projectPropertyDeleteResult.Error.Error()}
 	}
 	log.Println("Succsessfully removed project properties for project with id: ", id)
+
+	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(id)
+	if projectJobDeleteResult.Error != nil {
+		log.Println("Failed to remove jobs for project with id: ", id)
+		return dtos.Response{Success: false, Message: projectJobDeleteResult.Error.Error()}
+	}
+
+	log.Println("Succsessfully removed project jobs for project with id: ", id)
 
 	existingProjectResponse := GetProjectById(id, repository)
 
@@ -98,19 +125,24 @@ func UpdateProjectById(
 
 	log.Println("Succsessfully updated properties for project with id: ", id)
 
-	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(existingProject.ProjectId)
-	if projectJobDeleteResult.Error != nil {
-		log.Println("Failed to remove jobs for project with id: ", id)
-		return dtos.Response{Success: false, Message: projectJobDeleteResult.Error.Error()}
-	}
-
-	log.Println("Succsessfully removed project jobs for project with id: ", id)
-
 	constructionPropertiesRepositoryResult := constructionJobPropertyRepository.
 		FindPropertiesByCompanyName(project.ConstructionCompanyName)
 
 	if constructionPropertiesRepositoryResult.Error != nil {
 		return dtos.Response{Success: false, Message: constructionPropertiesRepositoryResult.Error.Error()}
+	}
+
+	projectJobsRepositoryResult := jobsRepository.FindProjectJobs(
+		project.WallMaterial,
+		project.FoundationMaterial,
+		project.RoofingMaterial,
+		project.FinishMaterial)
+	if projectJobsRepositoryResult.Error != nil {
+		return dtos.Response{Success: false, Message: projectJobsRepositoryResult.Error.Error()}
+	}
+
+	for _, job := range *projectJobsRepositoryResult.Result.(*[]models.Job) {
+		existingProject.ProjectJobs = append(existingProject.ProjectJobs, converters.ConvertJobToProjectJob(job))
 	}
 
 	projectJobsCalculated := helpers.CalculateCostDurationForProjectJobs(
@@ -124,11 +156,11 @@ func UpdateProjectById(
 
 	for index, job := range project.ProjectJobs {
 		calJob := calcJobMap[job.Job.JobCode]
-		(&project.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
-		(&project.ProjectJobs[index]).ConstructionDurationInDays = calJob.ConstructionDurationInDays
-		(&project.ProjectJobs[index]).ConstructionDurationInHours = calJob.ConstructionDurationInHours
-		(&project.ProjectJobs[index]).ConstructionWorkers = calJob.ConstructionWorkers
-		(&project.ProjectJobs[index]).ConstructionDuration = calJob.ConstructionDuration
+		(&existingProject.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
+		(&existingProject.ProjectJobs[index]).ConstructionDurationInDays = calJob.ConstructionDurationInDays
+		(&existingProject.ProjectJobs[index]).ConstructionDurationInHours = calJob.ConstructionDurationInHours
+		(&existingProject.ProjectJobs[index]).ConstructionWorkers = calJob.ConstructionWorkers
+		(&existingProject.ProjectJobs[index]).ConstructionDuration = calJob.ConstructionDuration
 	}
 
 	var projectCost int
@@ -137,7 +169,97 @@ func UpdateProjectById(
 	}
 
 	existingProject.ConstructionCost = projectCost
-	existingProject.ProjectJobs = project.ProjectJobs
+	existingProject.ProjectProperties = project.ProjectProperties
+
+	existingProject.ConstructionDuration = helpers.CalculateProjectDuration(project.ProjectJobs)
+
+	operationResult := repository.Save(existingProject)
+
+	if operationResult.Error != nil {
+		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
+	}
+
+	return dtos.Response{Success: true, Data: operationResult.Result}
+}
+
+func UpdateProjectProperties(
+	id string,
+	project *models.Project,
+	repository repositories.ProjectRepository,
+	jobsRepository repositories.JobRepository,
+	projectJobRepository repositories.ProjectJobRepository,
+	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository) dtos.Response {
+
+	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(id)
+	if projectJobDeleteResult.Error != nil {
+		log.Println("Failed to remove jobs for project with id: ", id)
+		return dtos.Response{Success: false, Message: projectJobDeleteResult.Error.Error()}
+	}
+
+	log.Println("Succsessfully removed project jobs for project with id: ", id)
+
+	log.Println("Start update project with id: ", id)
+
+	existingProjectResponse := GetProjectById(id, repository)
+
+	if !existingProjectResponse.Success {
+		return existingProjectResponse
+	}
+	log.Println("Succsessfully retrieved project with id: ", id)
+	existingProject := existingProjectResponse.Data.(*models.Project)
+
+	existingProject.ConstructionWorkersNumber = project.ConstructionWorkersNumber
+	existingProject.WallMaterial = project.WallMaterial
+	existingProject.FoundationMaterial = project.FoundationMaterial
+	existingProject.FinishMaterial = project.FinishMaterial
+	existingProject.RoofingMaterial = project.RoofingMaterial
+
+	log.Println("Succsessfully updated properties for project with id: ", id)
+
+	constructionPropertiesRepositoryResult := constructionJobPropertyRepository.
+		FindPropertiesByCompanyName(project.ConstructionCompanyName)
+
+	if constructionPropertiesRepositoryResult.Error != nil {
+		return dtos.Response{Success: false, Message: constructionPropertiesRepositoryResult.Error.Error()}
+	}
+
+	projectJobsRepositoryResult := jobsRepository.FindProjectJobs(
+		project.WallMaterial,
+		project.FoundationMaterial,
+		project.RoofingMaterial,
+		project.FinishMaterial)
+	if projectJobsRepositoryResult.Error != nil {
+		return dtos.Response{Success: false, Message: projectJobsRepositoryResult.Error.Error()}
+	}
+
+	for _, job := range *projectJobsRepositoryResult.Result.(*[]models.Job) {
+		existingProject.ProjectJobs = append(existingProject.ProjectJobs, converters.ConvertJobToProjectJob(job))
+	}
+
+	projectJobsCalculated := helpers.CalculateCostDurationForProjectJobs(
+		*project,
+		constructionPropertiesRepositoryResult.Result.(*[]models.ConstructionJobProperty))
+
+	calcJobMap := map[string]helpers.JobCalculations{}
+	for _, prop := range projectJobsCalculated {
+		calcJobMap[prop.JobCode] = prop
+	}
+
+	for index, job := range existingProject.ProjectJobs {
+		calJob := calcJobMap[job.Job.JobCode]
+		(&existingProject.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
+		(&existingProject.ProjectJobs[index]).ConstructionDurationInDays = calJob.ConstructionDurationInDays
+		(&existingProject.ProjectJobs[index]).ConstructionDurationInHours = calJob.ConstructionDurationInHours
+		(&existingProject.ProjectJobs[index]).ConstructionWorkers = calJob.ConstructionWorkers
+		(&existingProject.ProjectJobs[index]).ConstructionDuration = calJob.ConstructionDuration
+	}
+
+	var projectCost int
+	for _, j := range projectJobsCalculated {
+		projectCost += int(j.ConstructionCost)
+	}
+
+	existingProject.ConstructionCost = projectCost
 	existingProject.ProjectProperties = project.ProjectProperties
 
 	existingProject.ConstructionDuration = helpers.CalculateProjectDuration(project.ProjectJobs)
@@ -219,7 +341,7 @@ func updateProjectJob(project models.Project,
 	projectRepository repositories.ProjectRepository,
 	projectJobRepository repositories.ProjectJobRepository) dtos.Response {
 
-	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(project.ProjectId)
+	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(strconv.Itoa(project.ProjectId))
 	if projectJobDeleteResult.Error != nil {
 		log.Println("Failed to remove jobs for project with id: ", project.ProjectId)
 		return dtos.Response{Success: false, Message: projectJobDeleteResult.Error.Error()}

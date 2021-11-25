@@ -13,7 +13,7 @@ func NewProjectJobRepository(db *gorm.DB) *ProjectJobRepository {
 	return &ProjectJobRepository{db: db}
 }
 
-func (r *ProjectJobRepository) DeleteProjectJobsByProjectId(projectId int) RepositoryResult {
+func (r *ProjectJobRepository) DeleteProjectJobsByProjectId(projectId string) RepositoryResult {
 
 	err := r.db.Where("project_refer = ?", projectId).Delete(&models.ProjectJob{}).Error
 
