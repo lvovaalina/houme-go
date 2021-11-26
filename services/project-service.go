@@ -47,8 +47,6 @@ func CreateProject(
 		calcJobMap[prop.JobCode] = prop
 	}
 
-	log.Println("JOBSSS CR ", len(project.ProjectJobs))
-
 	for index, job := range project.ProjectJobs {
 		calJob := calcJobMap[job.Job.JobCode]
 		(&project.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
@@ -285,7 +283,12 @@ func GetAllProjects(repository repositories.ProjectRepository) dtos.Response {
 	return dtos.Response{Success: true, Data: datas}
 }
 
-func DeleteProjectById(id string, repository repositories.ProjectRepository) dtos.Response {
+func DeleteProjectById(
+	id string, repository repositories.ProjectRepository,
+	projectPropertyRepository repositories.ProjectPropertyRepository,
+	projectJobRepository repositories.ProjectJobRepository) dtos.Response {
+	projectPropertyRepository.DeleteProjectPropertiesByProjectId(id)
+	projectJobRepository.DeleteProjectJobsByProjectId(id)
 	operationResult := repository.DeleteProjectById(id)
 
 	if operationResult.Error != nil {

@@ -15,7 +15,7 @@ func NewProjectJobRepository(db *gorm.DB) *ProjectJobRepository {
 
 func (r *ProjectJobRepository) DeleteProjectJobsByProjectId(projectId string) RepositoryResult {
 
-	err := r.db.Where("project_refer = ?", projectId).Delete(&models.ProjectJob{}).Error
+	err := r.db.Unscoped().Where("project_refer = ?", projectId).Delete(&models.ProjectJob{}).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}

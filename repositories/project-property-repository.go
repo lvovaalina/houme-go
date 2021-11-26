@@ -14,7 +14,7 @@ func NewProjectPropertyRepository(db *gorm.DB) *ProjectPropertyRepository {
 }
 
 func (r *ProjectPropertyRepository) DeleteProjectPropertiesByProjectId(projectId string) RepositoryResult {
-	err := r.db.Where("project_refer = ?", projectId).Delete(&models.ProjectProperty{}).Error
+	err := r.db.Unscoped().Where("project_refer = ?", projectId).Delete(&models.ProjectProperty{}).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}

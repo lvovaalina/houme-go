@@ -109,7 +109,7 @@ func SetupRoutes(
 
 		code := http.StatusOK
 
-		response := services.DeleteProjectById(id, *projectRepository)
+		response := services.DeleteProjectById(id, *projectRepository, *projectPropertyRepository, *projectJobRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
