@@ -231,7 +231,9 @@ func UpdateProjectProperties(
 	}
 
 	for _, job := range *projectJobsRepositoryResult.Result.(*[]models.Job) {
-		existingProject.ProjectJobs = append(existingProject.ProjectJobs, converters.ConvertJobToProjectJob(job))
+		convertedJob := converters.ConvertJobToProjectJob(job)
+		existingProject.ProjectJobs = append(existingProject.ProjectJobs, convertedJob)
+		project.ProjectJobs = append(project.ProjectJobs, convertedJob)
 	}
 
 	projectJobsCalculated := helpers.CalculateCostDurationForProjectJobs(
