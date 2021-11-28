@@ -239,7 +239,7 @@ func SetupRoutes(
 
 		response := services.UpdateJobPropertyById(
 			id, jobProperty, *constructionJobPropertiesRepository,
-			*projectRepository, *projectJobRepository, *projectPropertyRepository)
+			*projectRepository, *projectJobRepository, *projectPropertyRepository, *jobsRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
