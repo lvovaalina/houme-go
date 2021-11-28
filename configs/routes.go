@@ -123,7 +123,11 @@ func SetupRoutes(
 
 		code := http.StatusOK
 
-		response := services.FindJobsByProjectId(projectId, *projectJobRepository)
+		response := services.FindJobsByProjectId(
+			projectId,
+			*projectJobRepository,
+			*projectPropertyRepository,
+			*constructionJobPropertiesRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
