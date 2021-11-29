@@ -59,3 +59,5 @@ replace bitbucket.com/houmeteam/houme-go/langs => ../langs
 replace bitbucket.com/houmeteam/houme-go/repositories => ../repositories
 
 replace bitbucket.com/houmeteam/houme-go/services => ../services
+
+replace bitbucket.com/houmeteam/houme-go/converters => ../converters

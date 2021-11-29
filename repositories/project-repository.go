@@ -53,7 +53,7 @@ func (r *ProjectRepository) FindAllProjects() RepositoryResult {
 }
 
 func (r *ProjectRepository) DeleteProjectById(id string) RepositoryResult {
-	err := r.db.Delete(&models.Project{}, id).Error
+	err := r.db.Unscoped().Delete(&models.Project{}, id).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}

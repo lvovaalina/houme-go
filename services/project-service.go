@@ -2,63 +2,36 @@ package services
 
 import (
 	"log"
+	"strconv"
 
+	"bitbucket.org/houmeteam/houme-go/converters"
 	"bitbucket.org/houmeteam/houme-go/dtos"
 	"bitbucket.org/houmeteam/houme-go/helpers"
 	"bitbucket.org/houmeteam/houme-go/models"
 	"bitbucket.org/houmeteam/houme-go/repositories"
-	"github.com/davecgh/go-spew/spew"
 )
 
 func CreateProject(
 	project *models.Project,
 	repository repositories.ProjectRepository,
-	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository) dtos.Response {
+	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
+	jobsRepository repositories.JobRepository) dtos.Response {
 
-	constructionPropertiesRepositoryResult := constructionJobPropertyRepository.
-		FindPropertiesByCompanyName(project.ConstructionCompanyName)
+	setProjectJobsResult := setProjectJobs(project, nil, constructionJobPropertyRepository, jobsRepository)
 
-	if constructionPropertiesRepositoryResult.Error != nil {
-		return dtos.Response{Success: false, Message: constructionPropertiesRepositoryResult.Error.Error()}
+	if setProjectJobsResult.Success {
+		operationResult := repository.Save(setProjectJobsResult.Data.(*models.Project))
+
+		if operationResult.Error != nil {
+			return dtos.Response{Success: false, Message: operationResult.Error.Error()}
+		}
+
+		var data = operationResult.Result.(*models.Project)
+
+		return dtos.Response{Success: true, Data: data}
 	}
 
-	projectJobsCalculated := helpers.CalculateCostDurationForProjectJobs(
-		*project,
-		constructionPropertiesRepositoryResult.Result.(*[]models.ConstructionJobProperty))
-
-	calcJobMap := map[string]helpers.JobCalculations{}
-	for _, prop := range projectJobsCalculated {
-		calcJobMap[prop.JobCode] = prop
-	}
-
-	for index, job := range project.ProjectJobs {
-		calJob := calcJobMap[job.Job.JobCode]
-		(&project.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
-		(&project.ProjectJobs[index]).ConstructionDurationInDays = calJob.ConstructionDurationInDays
-		(&project.ProjectJobs[index]).ConstructionDurationInHours = calJob.ConstructionDurationInHours
-		(&project.ProjectJobs[index]).ConstructionWorkers = calJob.ConstructionWorkers
-		(&project.ProjectJobs[index]).ConstructionDuration = calJob.ConstructionDuration
-	}
-
-	var projectCost int
-	var projectDuration int
-	for _, j := range projectJobsCalculated {
-		projectCost += int(j.ConstructionCost)
-		projectDuration += j.ConstructionDurationInDays
-	}
-
-	project.ConstructionCost = projectDuration
-	project.ConstructionDuration = helpers.CalculateProjectDuration(project.ProjectJobs)
-
-	operationResult := repository.Save(project)
-
-	if operationResult.Error != nil {
-		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
-	}
-
-	var data = operationResult.Result.(*models.Project)
-
-	return dtos.Response{Success: true, Data: data}
+	return setProjectJobsResult
 }
 
 func UpdateProjectById(
@@ -67,7 +40,8 @@ func UpdateProjectById(
 	repository repositories.ProjectRepository,
 	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
 	projectJobRepository repositories.ProjectJobRepository,
-	projectPropertyRepository repositories.ProjectPropertyRepository) dtos.Response {
+	projectPropertyRepository repositories.ProjectPropertyRepository,
+	jobsRepository repositories.JobRepository) dtos.Response {
 
 	log.Println("Start update project with id: ", id)
 
@@ -77,6 +51,14 @@ func UpdateProjectById(
 		return dtos.Response{Success: false, Message: projectPropertyDeleteResult.Error.Error()}
 	}
 	log.Println("Succsessfully removed project properties for project with id: ", id)
+
+	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(id)
+	if projectJobDeleteResult.Error != nil {
+		log.Println("Failed to remove jobs for project with id: ", id)
+		return dtos.Response{Success: false, Message: projectJobDeleteResult.Error.Error()}
+	}
+
+	log.Println("Succsessfully removed project jobs for project with id: ", id)
 
 	existingProjectResponse := GetProjectById(id, repository)
 
@@ -95,10 +77,36 @@ func UpdateProjectById(
 	existingProject.FoundationMaterial = project.FoundationMaterial
 	existingProject.FinishMaterial = project.FinishMaterial
 	existingProject.RoofingMaterial = project.RoofingMaterial
+	existingProject.ProjectProperties = project.ProjectProperties
 
 	log.Println("Succsessfully updated properties for project with id: ", id)
 
-	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(existingProject.ProjectId)
+	setProjectJobsResult := setProjectJobs(project, existingProject, constructionJobPropertyRepository, jobsRepository)
+
+	if setProjectJobsResult.Success {
+		operationResult := repository.Save(setProjectJobsResult.Data.(*models.Project))
+
+		if operationResult.Error != nil {
+			return dtos.Response{Success: false, Message: operationResult.Error.Error()}
+		}
+
+		var data = operationResult.Result.(*models.Project)
+
+		return dtos.Response{Success: true, Data: data}
+	}
+
+	return setProjectJobsResult
+}
+
+func UpdateProjectProperties(
+	id string,
+	project *models.Project,
+	repository repositories.ProjectRepository,
+	jobsRepository repositories.JobRepository,
+	projectJobRepository repositories.ProjectJobRepository,
+	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository) dtos.Response {
+
+	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(id)
 	if projectJobDeleteResult.Error != nil {
 		log.Println("Failed to remove jobs for project with id: ", id)
 		return dtos.Response{Success: false, Message: projectJobDeleteResult.Error.Error()}
@@ -106,49 +114,39 @@ func UpdateProjectById(
 
 	log.Println("Succsessfully removed project jobs for project with id: ", id)
 
-	constructionPropertiesRepositoryResult := constructionJobPropertyRepository.
-		FindPropertiesByCompanyName(project.ConstructionCompanyName)
+	log.Println("Start update project with id: ", id)
 
-	if constructionPropertiesRepositoryResult.Error != nil {
-		return dtos.Response{Success: false, Message: constructionPropertiesRepositoryResult.Error.Error()}
+	existingProjectResponse := GetProjectById(id, repository)
+
+	if !existingProjectResponse.Success {
+		return existingProjectResponse
+	}
+	log.Println("Succsessfully retrieved project with id: ", id)
+	existingProject := existingProjectResponse.Data.(*models.Project)
+
+	existingProject.ConstructionWorkersNumber = project.ConstructionWorkersNumber
+	existingProject.WallMaterial = project.WallMaterial
+	existingProject.FoundationMaterial = project.FoundationMaterial
+	existingProject.FinishMaterial = project.FinishMaterial
+	existingProject.RoofingMaterial = project.RoofingMaterial
+
+	log.Println("Succsessfully updated properties for project with id: ", id)
+
+	setProjectJobsResult := setProjectJobs(project, existingProject, constructionJobPropertyRepository, jobsRepository)
+
+	if setProjectJobsResult.Success {
+		operationResult := repository.Save(setProjectJobsResult.Data.(*models.Project))
+
+		if operationResult.Error != nil {
+			return dtos.Response{Success: false, Message: operationResult.Error.Error()}
+		}
+
+		var data = operationResult.Result.(*models.Project)
+
+		return dtos.Response{Success: true, Data: data}
 	}
 
-	projectJobsCalculated := helpers.CalculateCostDurationForProjectJobs(
-		*project,
-		constructionPropertiesRepositoryResult.Result.(*[]models.ConstructionJobProperty))
-
-	calcJobMap := map[string]helpers.JobCalculations{}
-	for _, prop := range projectJobsCalculated {
-		calcJobMap[prop.JobCode] = prop
-	}
-
-	for index, job := range project.ProjectJobs {
-		calJob := calcJobMap[job.Job.JobCode]
-		(&project.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
-		(&project.ProjectJobs[index]).ConstructionDurationInDays = calJob.ConstructionDurationInDays
-		(&project.ProjectJobs[index]).ConstructionDurationInHours = calJob.ConstructionDurationInHours
-		(&project.ProjectJobs[index]).ConstructionWorkers = calJob.ConstructionWorkers
-		(&project.ProjectJobs[index]).ConstructionDuration = calJob.ConstructionDuration
-	}
-
-	var projectCost int
-	for _, j := range projectJobsCalculated {
-		projectCost += int(j.ConstructionCost)
-	}
-
-	existingProject.ConstructionCost = projectCost
-	existingProject.ProjectJobs = project.ProjectJobs
-	existingProject.ProjectProperties = project.ProjectProperties
-
-	existingProject.ConstructionDuration = helpers.CalculateProjectDuration(project.ProjectJobs)
-
-	operationResult := repository.Save(existingProject)
-
-	if operationResult.Error != nil {
-		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
-	}
-
-	return dtos.Response{Success: true, Data: operationResult.Result}
+	return setProjectJobsResult
 }
 
 func GetAllProjects(repository repositories.ProjectRepository) dtos.Response {
@@ -163,7 +161,12 @@ func GetAllProjects(repository repositories.ProjectRepository) dtos.Response {
 	return dtos.Response{Success: true, Data: datas}
 }
 
-func DeleteProjectById(id string, repository repositories.ProjectRepository) dtos.Response {
+func DeleteProjectById(
+	id string, repository repositories.ProjectRepository,
+	projectPropertyRepository repositories.ProjectPropertyRepository,
+	projectJobRepository repositories.ProjectJobRepository) dtos.Response {
+	projectPropertyRepository.DeleteProjectPropertiesByProjectId(id)
+	projectJobRepository.DeleteProjectJobsByProjectId(id)
 	operationResult := repository.DeleteProjectById(id)
 
 	if operationResult.Error != nil {
@@ -187,7 +190,7 @@ func UpdateProjectsJobs(
 	projectRepository repositories.ProjectRepository,
 	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
 	projectJobRepository repositories.ProjectJobRepository,
-	projectPropertyRepository repositories.ProjectPropertyRepository) dtos.Response {
+	jobsRepository repositories.JobRepository) dtos.Response {
 	getAllProjectsResult := projectRepository.FindAllProjects()
 	if getAllProjectsResult.Error != nil {
 		log.Println("Failed to retrieve all project for update")
@@ -202,64 +205,120 @@ func UpdateProjectsJobs(
 		return dtos.Response{Success: false, Message: constructionPropertiesRepositoryResult.Error.Error()}
 	}
 
-	constructionProperties := constructionPropertiesRepositoryResult.Result.(*[]models.ConstructionJobProperty)
-
 	projects := getAllProjectsResult.Result.(*[]models.Project)
 	for _, project := range *projects {
-		spew.Dump(project.ProjectProperties)
-		go updateProjectJob(
-			project, constructionProperties, projectRepository, projectJobRepository)
+		updateProjectJob(
+			&project,
+			&projectRepository,
+			constructionJobPropertyRepository,
+			projectJobRepository,
+			jobsRepository)
 	}
 
 	return dtos.Response{Success: true}
 }
 
-func updateProjectJob(project models.Project,
-	constructionProperties *[]models.ConstructionJobProperty,
-	projectRepository repositories.ProjectRepository,
-	projectJobRepository repositories.ProjectJobRepository) dtos.Response {
+func updateProjectJob(
+	project *models.Project,
+	repository *repositories.ProjectRepository,
+	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
+	projectJobRepository repositories.ProjectJobRepository,
+	jobsRepository repositories.JobRepository) dtos.Response {
 
-	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(project.ProjectId)
+	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(strconv.Itoa(project.ProjectId))
 	if projectJobDeleteResult.Error != nil {
 		log.Println("Failed to remove jobs for project with id: ", project.ProjectId)
 		return dtos.Response{Success: false, Message: projectJobDeleteResult.Error.Error()}
 	}
 
-	log.Println("Succsessfully removed project jobs for project with id: ", project.ProjectId)
+	setProjectJobsResult := setProjectJobs(project, nil, constructionJobPropertyRepository, jobsRepository)
+
+	if setProjectJobsResult.Success {
+		project.ProjectProperties = []models.ProjectProperty{}
+		operationResult := repository.Save(setProjectJobsResult.Data.(*models.Project))
+
+		if operationResult.Error != nil {
+			return dtos.Response{Success: false, Message: operationResult.Error.Error()}
+		}
+
+		var data = operationResult.Result.(*models.Project)
+
+		return dtos.Response{Success: true, Data: data}
+	}
+
+	return setProjectJobsResult
+}
+
+func setProjectJobs(
+	project *models.Project,
+	existingProject *models.Project,
+	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
+	jobsRepository repositories.JobRepository) dtos.Response {
+	constructionPropertiesRepositoryResult := constructionJobPropertyRepository.
+		FindPropertiesByCompanyName(project.ConstructionCompanyName)
+
+	if constructionPropertiesRepositoryResult.Error != nil {
+		return dtos.Response{Success: false, Message: constructionPropertiesRepositoryResult.Error.Error()}
+	}
+
+	projectJobsRepositoryResult := jobsRepository.FindProjectJobs(
+		project.WallMaterial,
+		project.FoundationMaterial,
+		project.RoofingMaterial,
+		project.FinishMaterial)
+	if projectJobsRepositoryResult.Error != nil {
+		return dtos.Response{Success: false, Message: projectJobsRepositoryResult.Error.Error()}
+	}
+
+	project.ProjectJobs = []models.ProjectJob{}
+	if existingProject != nil {
+		existingProject.ProjectJobs = []models.ProjectJob{}
+	}
+
+	for _, job := range *projectJobsRepositoryResult.Result.(*[]models.Job) {
+		project.ProjectJobs = append(project.ProjectJobs, converters.ConvertJobToProjectJob(job))
+		if existingProject != nil {
+			existingProject.ProjectJobs = append(existingProject.ProjectJobs, converters.ConvertJobToProjectJob(job))
+		}
+	}
 
 	projectJobsCalculated := helpers.CalculateCostDurationForProjectJobs(
-		project,
-		constructionProperties)
+		*project,
+		constructionPropertiesRepositoryResult.Result.(*[]models.ConstructionJobProperty))
 
 	calcJobMap := map[string]helpers.JobCalculations{}
 	for _, prop := range projectJobsCalculated {
 		calcJobMap[prop.JobCode] = prop
 	}
 
-	for index, job := range project.ProjectJobs {
+	var projectToUpdate *models.Project
+	if existingProject == nil {
+		projectToUpdate = project
+	} else {
+		projectToUpdate = existingProject
+	}
+
+	for index, job := range projectToUpdate.ProjectJobs {
 		calJob := calcJobMap[job.Job.JobCode]
-		(&project.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
-		(&project.ProjectJobs[index]).ConstructionDurationInDays = calJob.ConstructionDurationInDays
-		(&project.ProjectJobs[index]).ConstructionDurationInHours = calJob.ConstructionDurationInHours
-		(&project.ProjectJobs[index]).ConstructionWorkers = calJob.ConstructionWorkers
-		(&project.ProjectJobs[index]).ConstructionDuration = calJob.ConstructionDuration
-		(&project.ProjectJobs[index]).ID = 0
-		(&project.ProjectJobs[index]).ProjectJobId = 0
+		(&projectToUpdate.ProjectJobs[index]).ConstructionCost = calJob.ConstructionCost
+		(&projectToUpdate.ProjectJobs[index]).ConstructionDurationInDays = calJob.ConstructionDurationInDays
+		(&projectToUpdate.ProjectJobs[index]).ConstructionDurationInHours = calJob.ConstructionDurationInHours
+		(&projectToUpdate.ProjectJobs[index]).ConstructionWorkers = calJob.ConstructionWorkers
+		(&projectToUpdate.ProjectJobs[index]).ConstructionDuration = calJob.ConstructionDuration
 	}
 
 	var projectCost int
+	var projectDuration int
 	for _, j := range projectJobsCalculated {
 		projectCost += int(j.ConstructionCost)
+		projectDuration += j.ConstructionDurationInDays
 	}
 
-	project.ConstructionCost = projectCost
-	project.ConstructionDuration = helpers.CalculateProjectDuration(project.ProjectJobs)
+	projectToUpdate.ConstructionCost = projectCost
+	projectToUpdate.ConstructionDuration = helpers.CalculateProjectDuration(projectToUpdate.ProjectJobs)
+	log.Println(
+		"Recalculated duration and cost for project with project_id ", project.ProjectId,
+		", project cost: ", projectCost, "project duration: ", projectDuration)
 
-	operationResult := projectRepository.Save(&project)
-
-	if operationResult.Error != nil {
-		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
-	}
-
-	return dtos.Response{Success: true, Data: operationResult.Result}
+	return dtos.Response{Success: true, Data: projectToUpdate}
 }

@@ -13,9 +13,9 @@ func NewProjectJobRepository(db *gorm.DB) *ProjectJobRepository {
 	return &ProjectJobRepository{db: db}
 }
 
-func (r *ProjectJobRepository) DeleteProjectJobsByProjectId(projectId int) RepositoryResult {
+func (r *ProjectJobRepository) DeleteProjectJobsByProjectId(projectId string) RepositoryResult {
 
-	err := r.db.Where("project_refer = ?", projectId).Delete(&models.ProjectJob{}).Error
+	err := r.db.Unscoped().Where("project_refer = ?", projectId).Delete(&models.ProjectJob{}).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}
@@ -27,7 +27,7 @@ func (r *ProjectJobRepository) DeleteProjectJobsByProjectId(projectId int) Repos
 func (r *ProjectJobRepository) FindProjectJobsByProjectId(projectId string) RepositoryResult {
 	var jobs []models.ProjectJob
 
-	err := r.db.Where("project_refer = ?", projectId).Preload("Job").Preload("Job.Property").Find(&jobs).Error
+	err := r.db.Where("project_refer = ?", projectId).Order("job_id").Preload("Job").Preload("Job.Property").Find(&jobs).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}

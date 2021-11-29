@@ -56,7 +56,8 @@ func SetupRoutes(
 		code := http.StatusOK
 
 		// save project & get it's response
-		response := services.CreateProject(&project, *projectRepository, *constructionJobPropertiesRepository)
+		response := services.CreateProject(
+			&project, *projectRepository, *constructionJobPropertiesRepository, *jobsRepository)
 
 		// save contact failed
 		if !response.Success {
@@ -108,7 +109,7 @@ func SetupRoutes(
 
 		code := http.StatusOK
 
-		response := services.DeleteProjectById(id, *projectRepository)
+		response := services.DeleteProjectById(id, *projectRepository, *projectPropertyRepository, *projectJobRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
@@ -122,7 +123,11 @@ func SetupRoutes(
 
 		code := http.StatusOK
 
-		response := services.FindJobsByProjectId(projectId, *projectJobRepository)
+		response := services.FindJobsByProjectId(
+			projectId,
+			*projectJobRepository,
+			*projectPropertyRepository,
+			*constructionJobPropertiesRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
@@ -167,7 +172,7 @@ func SetupRoutes(
 		response := services.UpdateProjectById(
 			id, &project, *projectRepository,
 			*constructionJobPropertiesRepository,
-			*projectJobRepository, *projectPropertyRepository)
+			*projectJobRepository, *projectPropertyRepository, *jobsRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
@@ -176,6 +181,35 @@ func SetupRoutes(
 		context.JSON(code, response)
 	})
 
+	route.PUT("/updateProjectProperties/:id", func(context *gin.Context) {
+		id := context.Param("id")
+
+		var project models.Project
+
+		err := context.ShouldBindJSON(&project)
+
+		// validation errors
+		if err != nil {
+			log.Println("ERROR: ", err.Error())
+			response := err.Error()
+
+			context.JSON(http.StatusBadRequest, response)
+
+			return
+		}
+
+		code := http.StatusOK
+
+		response := services.UpdateProjectProperties(
+			id, &project, *projectRepository,
+			*jobsRepository, *projectJobRepository, *constructionJobPropertiesRepository)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
 	route.GET("/getJobProperties", func(context *gin.Context) {
 		code := http.StatusOK
 
@@ -209,7 +243,7 @@ func SetupRoutes(
 
 		response := services.UpdateJobPropertyById(
 			id, jobProperty, *constructionJobPropertiesRepository,
-			*projectRepository, *projectJobRepository, *projectPropertyRepository)
+			*projectRepository, *projectJobRepository, *projectPropertyRepository, *jobsRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest

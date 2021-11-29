@@ -4,12 +4,12 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/heroku/x/hmetrics/onload"
-
 	"bitbucket.org/houmeteam/houme-go/configs"
 	"bitbucket.org/houmeteam/houme-go/database"
 	"bitbucket.org/houmeteam/houme-go/models"
 	"bitbucket.org/houmeteam/houme-go/repositories"
+
+	_ "github.com/heroku/x/hmetrics/onload"
 )
 
 func main() {
@@ -18,18 +18,11 @@ func main() {
 		port = "10000"
 	}
 
-	// database configs
-	//dbHost, dbUser, dbPassword, dbName := "localhost", "postgres", "l8397040", "houmly"
+	env := os.Getenv("ENV")
+	dbConfigs := configs.GetDBConfigs(env)
+	db, err := database.ConnectToDB(*dbConfigs)
 
-	dbHost, dbUser, dbPassword, dbName :=
-		"ec2-52-22-81-147.compute-1.amazonaws.com",
-		"soxoxijvmbhqiv",
-		"0ab277b623defd4ca7a72cba84bc60f06d7cabb6a8b311bc7580250bcef78b69",
-		"ddnmu64tjqh9ju"
-
-	db, err := database.ConnectToDB(dbHost, dbUser, dbPassword, dbName)
-
-	// unable to connect to database
+	//unable to connect to database
 	if err != nil {
 		log.Fatalln(err)
 	}
