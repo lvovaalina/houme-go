@@ -55,7 +55,7 @@ func CalculateCostDurationForProjectJobs(
 			constrDurInDays += 1
 		}
 
-		constrCost := math.Round(float64(float32(constrDurInHours) * jobProp.ConstructionCost))
+		constrCost := math.Round(float64(float32(constrDurInHours)*jobProp.ConstructionCost) * float64(constrWorkNumber))
 
 		calcJob := JobCalculations{
 			ConstructionWorkers:         constrWorkNumber,
@@ -126,6 +126,6 @@ func calculateDuration(value float32, speed float32, numberOfWorkers int) float3
 	return value / (speed * float32(numberOfWorkers))
 }
 
-func calculateCost(constructionDurationInHours int, constructionCost float32) float32 {
-	return float32(constructionDurationInHours) * constructionCost
+func calculateCost(constructionDurationInHours int, constructionCost float32, numberOfWorkers int) float32 {
+	return float32(constructionDurationInHours) * constructionCost * float32(numberOfWorkers)
 }
