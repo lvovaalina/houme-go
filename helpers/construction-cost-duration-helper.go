@@ -51,6 +51,7 @@ func CalculateCostDurationForProjectJobs(
 
 		constrDurInHours := int(math.Round(float64(constrDur)))
 		constrDurInDays := int(float64(constrDurInHours) / workingHoursInDay)
+
 		if (constrDurInHours % workingHoursInDay) > 0 {
 			constrDurInDays += 1
 		}
