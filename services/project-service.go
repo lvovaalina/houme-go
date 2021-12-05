@@ -351,9 +351,11 @@ func setProjectJobs(
 		propertiesMap[p.PropertyCode] = p.PropertyValue
 	}
 
+	var materialsCost float32
 	for _, material := range *projectMaterialsRepositoryResult.Result.(*[]models.ConstructionJobMaterial) {
 		projectMaterial := converters.ConvertMaterialToProjectMaterial(material)
 		projectMaterial.MaterialCost = propertiesMap[*material.Job.PropertyID] * material.MaterialCost
+		materialsCost += projectMaterial.MaterialCost
 		if existingProject != nil {
 			projectMaterial.ProjectRefer = projectToUpdate.ProjectId
 		}
@@ -376,7 +378,9 @@ func setProjectJobs(
 		projectDuration += j.ConstructionDurationInDays
 	}
 
-	projectToUpdate.ConstructionCost = projectCost
+	projectToUpdate.ConstructionCost = projectCost + int(materialsCost)
+	projectToUpdate.ConstructionJobCost = projectCost
+	projectToUpdate.ConstructionMaterialCost = int(materialsCost)
 	projectToUpdate.ConstructionDuration = helpers.CalculateProjectDuration(projectToUpdate.ProjectJobs)
 	log.Println(
 		"Recalculated duration and cost for project with project_id ", project.ProjectId,
