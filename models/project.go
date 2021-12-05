@@ -9,7 +9,6 @@ type Project struct {
 	BucketName                string
 	Filename                  string `gorm:"unique"`
 	LivingArea                string
-	RoomsNumber               int
 	ConstructionDuration      int
 	ConstructionCost          int
 	ConstructionMaterialCost  int
