@@ -21,7 +21,8 @@ func SetupRoutes(
 	constructionJobPropertiesRepository *repositories.ConstructionJobPropertyRepository,
 	constructionJobMaterialsRepository *repositories.ConstructionJobMaterialRepository,
 	projectJobRepository *repositories.ProjectJobRepository,
-	projectPropertyRepository *repositories.ProjectPropertyRepository) *gin.Engine {
+	projectPropertyRepository *repositories.ProjectPropertyRepository,
+	projectMaterialRepository *repositories.ProjectMaterialRepository) *gin.Engine {
 	route := gin.Default()
 
 	route.Use(gin.Logger())
@@ -57,7 +58,8 @@ func SetupRoutes(
 
 		// save project & get it's response
 		response := services.CreateProject(
-			&project, *projectRepository, *constructionJobPropertiesRepository, *jobsRepository)
+			&project, *projectRepository, *constructionJobPropertiesRepository,
+			*jobsRepository, *constructionJobMaterialsRepository)
 
 		// save contact failed
 		if !response.Success {
@@ -109,7 +111,8 @@ func SetupRoutes(
 
 		code := http.StatusOK
 
-		response := services.DeleteProjectById(id, *projectRepository, *projectPropertyRepository, *projectJobRepository)
+		response := services.DeleteProjectById(
+			id, *projectRepository, *projectPropertyRepository, *projectJobRepository, *projectMaterialRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
@@ -172,7 +175,9 @@ func SetupRoutes(
 		response := services.UpdateProjectById(
 			id, &project, *projectRepository,
 			*constructionJobPropertiesRepository,
-			*projectJobRepository, *projectPropertyRepository, *jobsRepository)
+			*projectJobRepository, *projectPropertyRepository,
+			*jobsRepository, *constructionJobMaterialsRepository,
+			*projectMaterialRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
@@ -202,7 +207,9 @@ func SetupRoutes(
 
 		response := services.UpdateProjectProperties(
 			id, &project, *projectRepository,
-			*jobsRepository, *projectJobRepository, *constructionJobPropertiesRepository)
+			*jobsRepository, *projectJobRepository,
+			*constructionJobPropertiesRepository,
+			*constructionJobMaterialsRepository, *projectMaterialRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
@@ -243,7 +250,9 @@ func SetupRoutes(
 
 		response := services.UpdateJobPropertyById(
 			id, jobProperty, *constructionJobPropertiesRepository,
-			*projectRepository, *projectJobRepository, *projectPropertyRepository, *jobsRepository)
+			*projectRepository, *projectJobRepository,
+			*projectPropertyRepository, *jobsRepository,
+			*constructionJobMaterialsRepository, *projectMaterialRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest

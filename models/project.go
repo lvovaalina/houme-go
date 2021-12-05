@@ -12,6 +12,8 @@ type Project struct {
 	RoomsNumber               int
 	ConstructionDuration      int
 	ConstructionCost          int
+	ConstructionMaterialCost  int
+	ConstructionJobCost       int
 	ConstructionWorkersNumber string
 	FoundationMaterial        string
 	WallMaterial              string
@@ -19,17 +21,20 @@ type Project struct {
 	RoofingMaterial           string
 	ConstructionCompanyName   string
 
-	ProjectJobs       []ProjectJob      `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
-	ProjectProperties []ProjectProperty `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
+	ProjectJobs       []ProjectJob         `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
+	ProjectProperties []ProjectProperty    `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
+	ProjectMaterials  []ProjectJobMaterial `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
 }
 
 type ProjectMin struct {
-	ProjectId            int
-	Name                 string
-	BucketName           string
-	Filename             string
-	LivingArea           string
-	RoomsNumber          int
-	ConstructionCost     int
-	ConstructionDuration int
+	ProjectId                int
+	Name                     string
+	BucketName               string
+	Filename                 string
+	LivingArea               string
+	RoomsNumber              int
+	ConstructionCost         int
+	ConstructionMaterialCost int
+	ConstructionJobCost      int
+	ConstructionDuration     int
 }
