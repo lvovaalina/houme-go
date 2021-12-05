@@ -19,8 +19,9 @@ type Project struct {
 	RoofingMaterial           string
 	ConstructionCompanyName   string
 
-	ProjectJobs       []ProjectJob      `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
-	ProjectProperties []ProjectProperty `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
+	ProjectJobs       []ProjectJob         `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
+	ProjectProperties []ProjectProperty    `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
+	ProjectMaterials  []ProjectJobMaterial `gorm:"foreignKey:ProjectRefer;references:ProjectId;"`
 }
 
 type ProjectMin struct {
