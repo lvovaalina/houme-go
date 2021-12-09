@@ -83,6 +83,8 @@ func UpdateProjectById(
 	existingProject.Name = project.Name
 	existingProject.BucketName = project.BucketName
 	existingProject.LivingArea = project.LivingArea
+	existingProject.Margin = project.Margin
+	existingProject.Workers = project.Workers
 	existingProject.ConstructionCompanyName = project.ConstructionCompanyName
 	existingProject.ConstructionWorkersNumber = project.ConstructionWorkersNumber
 	existingProject.WallMaterial = project.WallMaterial

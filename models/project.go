@@ -9,6 +9,8 @@ type Project struct {
 	BucketName                string
 	Filename                  string `gorm:"unique"`
 	LivingArea                string
+	Margin                    string
+	Workers                   string
 	ConstructionDuration      int
 	ConstructionCost          int
 	ConstructionMaterialCost  int
@@ -31,6 +33,8 @@ type ProjectMin struct {
 	BucketName               string
 	Filename                 string
 	LivingArea               string
+	Margin                   string
+	Workers                  string
 	RoomsNumber              int
 	ConstructionCost         int
 	ConstructionMaterialCost int
