@@ -25,15 +25,15 @@ func (r *ProjectRepository) Save(project *models.Project) RepositoryResult {
 }
 
 func (r *ProjectRepository) FindAll() RepositoryResult {
-	var properties []models.ProjectMin
+	var projects []models.ProjectMin
 
-	err := r.db.Model(&models.Project{}).Find(&properties).Error
+	err := r.db.Order("project_id").Model(&models.Project{}).Find(&projects).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}
 	}
 
-	return RepositoryResult{Result: &properties}
+	return RepositoryResult{Result: &projects}
 }
 
 func (r *ProjectRepository) FindAllProjects() RepositoryResult {

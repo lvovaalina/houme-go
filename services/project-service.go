@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/base64"
 	"log"
 	"strconv"
 
@@ -49,6 +50,12 @@ func UpdateProjectById(
 
 	log.Println("Start update project with id: ", id)
 
+	data, parseErr := base64.StdEncoding.DecodeString(project.ProjectCoverBase64)
+	if parseErr != nil {
+		log.Println("Project id:", id, "Error decoding image string:", parseErr)
+	}
+	project.ProjectCover = data
+
 	projectPropertyDeleteResult := projectPropertyRepository.DeleteProjectPropertiesByProjectId(id)
 	if projectPropertyDeleteResult.Error != nil {
 		log.Println("Failed to remove properties for project with id: ", id)
@@ -84,6 +91,7 @@ func UpdateProjectById(
 	existingProject.BucketName = project.BucketName
 	existingProject.LivingArea = project.LivingArea
 	existingProject.Margin = project.Margin
+	existingProject.ProjectCover = project.ProjectCover
 	existingProject.Workers = project.Workers
 	existingProject.ConstructionCompanyName = project.ConstructionCompanyName
 	existingProject.ConstructionWorkersNumber = project.ConstructionWorkersNumber
@@ -106,6 +114,7 @@ func UpdateProjectById(
 		}
 
 		var data = operationResult.Result.(*models.Project)
+		data.ProjectCoverBase64 = base64.StdEncoding.EncodeToString(data.ProjectCover)
 
 		return dtos.Response{Success: true, Data: data}
 	}
@@ -183,6 +192,10 @@ func GetAllProjects(repository repositories.ProjectRepository) dtos.Response {
 	}
 
 	var datas = operationResult.Result.(*[]models.ProjectMin)
+	var arr = *datas
+	for index, data := range arr {
+		arr[index].ProjectCoverBase64 = base64.StdEncoding.EncodeToString(data.ProjectCover)
+	}
 
 	return dtos.Response{Success: true, Data: datas}
 }
@@ -210,6 +223,10 @@ func GetProjectById(id string, repository repositories.ProjectRepository) dtos.R
 	if operationResult.Error != nil {
 		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
 	}
+
+	data := operationResult.Result.(*models.Project)
+
+	data.ProjectCoverBase64 = base64.StdEncoding.EncodeToString(data.ProjectCover)
 
 	return dtos.Response{Success: true, Data: operationResult.Result}
 }
