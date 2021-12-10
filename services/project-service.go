@@ -88,6 +88,7 @@ func UpdateProjectById(
 	existingProject := existingProjectResponse.Data.(*models.Project)
 
 	existingProject.Name = project.Name
+	existingProject.Filename = project.Filename
 	existingProject.BucketName = project.BucketName
 	existingProject.LivingArea = project.LivingArea
 	existingProject.Margin = project.Margin
