@@ -11,6 +11,8 @@ type Project struct {
 	LivingArea                string
 	Margin                    string
 	Workers                   string
+	ProjectCoverBase64        string `gorm:"-"`
+	ProjectCover              []byte
 	ConstructionDuration      int
 	ConstructionCost          int
 	ConstructionMaterialCost  int
@@ -40,4 +42,6 @@ type ProjectMin struct {
 	ConstructionMaterialCost int
 	ConstructionJobCost      int
 	ConstructionDuration     int
+	ProjectCover             []byte
+	ProjectCoverBase64       string `gorm:"-"`
 }
