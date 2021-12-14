@@ -16,7 +16,9 @@ func NewConstructionJobMaterialRepository(db *gorm.DB) *ConstructionJobMaterialR
 func (r *ConstructionJobMaterialRepository) FindMaterials() RepositoryResult {
 	var materials []models.ConstructionJobMaterial
 
-	err := r.db.Preload("Job").Preload("Job.Property").Find(&materials).Error
+	err := r.db.Preload("Job").Preload("Job.Property").
+		Joins("inner join jobs on jobs.job_code = construction_job_materials.job_id").
+		Order("jobs.job_id").Find(&materials).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}
@@ -55,4 +57,22 @@ func (r *ConstructionJobMaterialRepository) Save(jobMaterial *models.Constructio
 	}
 
 	return RepositoryResult{Result: jobMaterial}
+}
+
+func (r *ConstructionJobMaterialRepository) FindProjectJobsMaterials(
+	jobIds []int) RepositoryResult {
+	var materials []models.ConstructionJobMaterial
+
+	err := r.db.
+		Preload("Job").Preload("Job.Property").
+		Joins("inner join jobs on jobs.job_code = construction_job_materials.job_id").
+		Where("jobs.job_id IN ?", jobIds).
+		Order("jobs.job_id").
+		Find(&materials).Error
+
+	if err != nil {
+		return RepositoryResult{Error: err}
+	}
+
+	return RepositoryResult{Result: &materials}
 }
