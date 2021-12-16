@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
+	"bitbucket.org/houmeteam/houme-go/forge"
 	"bitbucket.org/houmeteam/houme-go/helpers"
 	"bitbucket.org/houmeteam/houme-go/models"
 	"bitbucket.org/houmeteam/houme-go/repositories"
@@ -249,10 +250,7 @@ func SetupRoutes(
 		code := http.StatusOK
 
 		response := services.UpdateJobPropertyById(
-			id, jobProperty, *constructionJobPropertiesRepository,
-			*projectRepository, *projectJobRepository,
-			*projectPropertyRepository, *jobsRepository,
-			*constructionJobMaterialsRepository, *projectMaterialRepository)
+			id, jobProperty, *constructionJobPropertiesRepository)
 
 		if !response.Success {
 			code = http.StatusBadRequest
@@ -345,6 +343,29 @@ func SetupRoutes(
 		}
 
 		context.JSON(code, response)
+	})
+
+	route.PUT("/updateProjects", func(context *gin.Context) {
+		code := http.StatusOK
+
+		response := services.UpdateProjectsJobs(
+			*projectRepository,
+			*constructionJobPropertiesRepository,
+			*projectJobRepository,
+			*jobsRepository,
+			*constructionJobMaterialsRepository,
+			*projectMaterialRepository)
+		if !response.Success {
+			// change http status code to 400
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
+	route.GET("/forgeGet", func(context *gin.Context) {
+		projects := forge.GetBucketObjects("houme")
+		context.JSON(http.StatusOK, projects)
 	})
 
 	return route
