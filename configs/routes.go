@@ -93,6 +93,8 @@ func SetupRoutes(
 			code = http.StatusBadRequest
 		}
 
+		context.SetSameSite(http.SameSiteNoneMode)
+
 		context.SetCookie("jwt", token, 60*60*2, "/", "https://houmly-dev.herokuapp.com", true, true)
 		context.Writer.Header().Add("access-control-expose-headers", "Set-Cookie")
 		context.JSON(code, response)
