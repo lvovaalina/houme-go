@@ -46,6 +46,8 @@ func main() {
 	db.AutoMigrate(&models.ProjectJobMaterial{})
 	db.AutoMigrate(&models.Project{})
 
+	db.AutoMigrate(&models.Admin{})
+
 	projectRepository := repositories.NewProjectRepository(db)
 	propertiesRepository := repositories.NewPropertyRepository(db)
 	jobsRepository := repositories.NewJobRepository(db)
@@ -54,11 +56,13 @@ func main() {
 	projectJobRepository := repositories.NewProjectJobRepository(db)
 	projectPropertyRepository := repositories.NewProjectPropertyRepository(db)
 	projectMaterialRepository := repositories.NewProjectMaterialRepository(db)
+	adminRepository := repositories.NewAdminRepository(db)
 
 	route := configs.SetupRoutes(
 		projectRepository, propertiesRepository, jobsRepository,
 		constructionJobPropertyRepository, constructionJobMaterialRepository,
-		projectJobRepository, projectPropertyRepository, projectMaterialRepository)
+		projectJobRepository, projectPropertyRepository, projectMaterialRepository,
+		adminRepository)
 
 	route.Run(":" + port)
 }

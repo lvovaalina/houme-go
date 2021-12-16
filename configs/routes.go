@@ -23,19 +23,104 @@ func SetupRoutes(
 	constructionJobMaterialsRepository *repositories.ConstructionJobMaterialRepository,
 	projectJobRepository *repositories.ProjectJobRepository,
 	projectPropertyRepository *repositories.ProjectPropertyRepository,
-	projectMaterialRepository *repositories.ProjectMaterialRepository) *gin.Engine {
+	projectMaterialRepository *repositories.ProjectMaterialRepository,
+	adminRepository *repositories.AdminRepository) *gin.Engine {
 	route := gin.Default()
 
 	route.Use(gin.Logger())
 
 	route.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"POST", "OPTIONS", "GET", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Content-Length", "Content-Type", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"},
+		AllowOrigins: []string{"http://localhost:5001"},
+		AllowMethods: []string{"POST", "OPTIONS", "GET", "PUT", "DELETE"},
+		AllowHeaders: []string{
+			"Content-Length", "Content-Type", "Accept-Encoding",
+			"X-CSRF-Token", "Authorization", "accept", "origin",
+			"Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
 
+	route.POST("/registerAdmin", func(context *gin.Context) {
+		var admin models.Admin
+
+		err := context.ShouldBindJSON(&admin)
+
+		// validation errors
+		if err != nil {
+			log.Println("Cannot unmarshal admin data, error: ", err.Error())
+			// generate validation errors response
+			response := helpers.GenerateValidationResponse(err)
+
+			context.JSON(http.StatusBadRequest, response)
+
+			return
+		}
+
+		code := http.StatusOK
+
+		// save project & get it's response
+		response := services.AdminRegister(*adminRepository, admin)
+
+		// save contact failed
+		if !response.Success {
+			// change http status code to 400
+			code = http.StatusBadRequest
+		}
+
+		context.JSON(code, response)
+	})
+
+	route.PUT("/loginAdmin", func(context *gin.Context) {
+		var admin models.Admin
+
+		err := context.ShouldBindJSON(&admin)
+
+		// validation errors
+		if err != nil {
+			log.Println("Cannot unmarshal admin data, error: ", err.Error())
+			// generate validation errors response
+			response := helpers.GenerateValidationResponse(err)
+
+			context.JSON(http.StatusBadRequest, response)
+
+			return
+		}
+
+		code := http.StatusOK
+		response, token := services.AdminLogin(*adminRepository, admin)
+
+		if !response.Success {
+			code = http.StatusBadRequest
+		}
+
+		context.SetCookie("jwt", token, 60*60*2, "/", "https://houmly-dev.herokuapp.com", false, true)
+
+		context.JSON(code, response)
+	})
+
+	route.GET("/isLoggedIn", func(context *gin.Context) {
+		authCookie, err := context.Cookie("jwt")
+		if err != nil {
+			log.Println("ERROR: ", err.Error())
+			response := err.Error()
+
+			context.JSON(http.StatusBadRequest, response)
+
+			return
+		}
+
+		log.Println(authCookie)
+
+		isAuthentificated, _ := services.IsAuthentificated(authCookie)
+		if !isAuthentificated {
+			context.JSON(http.StatusUnauthorized, "Not authorized")
+			return
+		}
+
+		context.JSON(http.StatusOK, "logged in")
+
+		return
+	})
 	route.POST("/create", func(context *gin.Context) {
 		// initialization project model
 		var project models.Project
@@ -218,8 +303,27 @@ func SetupRoutes(
 
 		context.JSON(code, response)
 	})
+
 	route.GET("/getJobProperties", func(context *gin.Context) {
 		code := http.StatusOK
+
+		authCookie, err := context.Cookie("jwt")
+		if err != nil {
+			log.Println("ERROR: ", err.Error())
+			response := err.Error()
+
+			context.JSON(http.StatusBadRequest, response)
+
+			return
+		}
+
+		log.Println(authCookie)
+
+		isAuthentificated, _ := services.IsAuthentificated(authCookie)
+		if !isAuthentificated {
+			context.JSON(http.StatusUnauthorized, "Not authorized")
+			return
+		}
 
 		response := services.FindJobProperties(*constructionJobPropertiesRepository)
 
