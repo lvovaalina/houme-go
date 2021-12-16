@@ -30,7 +30,7 @@ func SetupRoutes(
 	route.Use(gin.Logger())
 
 	route.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"*"},
+		AllowOrigins: []string{"https://houmly-dev.herokuapp.com/"},
 		AllowMethods: []string{"POST", "OPTIONS", "GET", "PUT", "DELETE"},
 		AllowHeaders: []string{
 			"Content-Length", "Content-Type", "Accept-Encoding",
@@ -94,7 +94,6 @@ func SetupRoutes(
 		}
 
 		context.SetCookie("jwt", token, 60*60*2, "/", "https://houmly-dev.herokuapp.com", false, true)
-
 		context.JSON(code, response)
 	})
 
