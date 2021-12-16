@@ -30,7 +30,7 @@ func SetupRoutes(
 	route.Use(gin.Logger())
 
 	route.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"https://houmly-dev.herokuapp.com/"},
+		AllowOrigins: []string{"https://houmly-dev.herokuapp.com"},
 		AllowMethods: []string{"POST", "OPTIONS", "GET", "PUT", "DELETE"},
 		AllowHeaders: []string{
 			"Content-Length", "Content-Type", "Accept-Encoding",
