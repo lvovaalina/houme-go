@@ -30,7 +30,7 @@ func SetupRoutes(
 	route.Use(gin.Logger())
 
 	route.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:5001"},
+		AllowOrigins: []string{"*"},
 		AllowMethods: []string{"POST", "OPTIONS", "GET", "PUT", "DELETE"},
 		AllowHeaders: []string{
 			"Content-Length", "Content-Type", "Accept-Encoding",
