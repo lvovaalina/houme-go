@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"bitbucket.org/houmeteam/houme-go/configs"
+	"bitbucket.org/houmeteam/houme-go/controllers"
 	"bitbucket.org/houmeteam/houme-go/database"
 	"bitbucket.org/houmeteam/houme-go/models"
 	"bitbucket.org/houmeteam/houme-go/repositories"
@@ -58,7 +59,10 @@ func main() {
 	projectMaterialRepository := repositories.NewProjectMaterialRepository(db)
 	adminRepository := repositories.NewAdminRepository(db)
 
+	adminConstroller := controllers.NewAdminController(adminRepository)
+
 	route := configs.SetupRoutes(
+		adminConstroller,
 		projectRepository, propertiesRepository, jobsRepository,
 		constructionJobPropertyRepository, constructionJobMaterialRepository,
 		projectJobRepository, projectPropertyRepository, projectMaterialRepository,

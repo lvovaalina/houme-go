@@ -15,7 +15,7 @@ const emailOrPasswordInvalid = "Email or Password is invalid"
 const secret = "somuchsecret"
 
 func AdminRegister(
-	repository repositories.AdminRepository,
+	repository *repositories.AdminRepository,
 	admin models.Admin) dtos.Response {
 	password, _ := bcrypt.GenerateFromPassword([]byte(admin.PasswordString), 14)
 
@@ -32,7 +32,7 @@ func AdminRegister(
 }
 
 func AdminLogin(
-	repository repositories.AdminRepository,
+	repository *repositories.AdminRepository,
 	admin models.Admin) (response dtos.Response, token string) {
 	token = ""
 	response = dtos.Response{Success: true}

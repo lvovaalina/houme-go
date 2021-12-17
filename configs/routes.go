@@ -8,6 +8,9 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
+
+	"bitbucket.org/houmeteam/houme-go/controllers"
 	"bitbucket.org/houmeteam/houme-go/forge"
 	"bitbucket.org/houmeteam/houme-go/helpers"
 	"bitbucket.org/houmeteam/houme-go/models"
@@ -15,7 +18,20 @@ import (
 	"bitbucket.org/houmeteam/houme-go/services"
 )
 
+var identityKey = "id"
+
+func helloHandler(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	user, _ := c.Get(identityKey)
+	c.JSON(200, gin.H{
+		"userID":   claims[identityKey],
+		"userName": user.(*models.Admin).Email,
+		"text":     "Hello World.",
+	})
+}
+
 func SetupRoutes(
+	adminController *controllers.AdminController,
 	projectRepository *repositories.ProjectRepository,
 	propertiesRepository *repositories.PropertyRepository,
 	jobsRepository *repositories.JobRepository,
@@ -41,65 +57,110 @@ func SetupRoutes(
 		MaxAge:           12 * time.Hour,
 	}))
 
-	route.POST("/registerAdmin", func(context *gin.Context) {
-		var admin models.Admin
+	var identityKey = "id"
+	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
+		Realm:       "test zone",
+		Key:         []byte("secret key"),
+		Timeout:     time.Hour,
+		MaxRefresh:  time.Hour,
+		IdentityKey: identityKey,
+		SendCookie:  true,
+		PayloadFunc: func(data interface{}) jwt.MapClaims {
+			v, ok := data.(*models.Admin)
+			log.Println("IS OK", ok)
+			if ok {
+				log.Println(v.Email)
+				return jwt.MapClaims{
+					identityKey: v.Email,
+				}
+			}
+			return jwt.MapClaims{}
+		},
+		IdentityHandler: func(c *gin.Context) interface{} {
+			claims := jwt.ExtractClaims(c)
+			return &models.Admin{
+				Email: claims[identityKey].(string),
+			}
+		},
+		Authenticator: func(c *gin.Context) (interface{}, error) {
+			var loginVals models.Admin
+			if err := c.ShouldBindJSON(&loginVals); err != nil {
+				return "", jwt.ErrMissingLoginValues
+			}
 
-		err := context.ShouldBindJSON(&admin)
+			if (loginVals.Email == "admin" && loginVals.PasswordString == "admin") ||
+				(loginVals.Email == "test" && loginVals.PasswordString == "test") {
+				return &models.Admin{
+					Email: loginVals.Email,
+				}, nil
+			}
 
-		// validation errors
-		if err != nil {
-			log.Println("Cannot unmarshal admin data, error: ", err.Error())
-			// generate validation errors response
-			response := helpers.GenerateValidationResponse(err)
+			return nil, jwt.ErrFailedAuthentication
+		},
+		Authorizator: func(data interface{}, c *gin.Context) bool {
+			log.Println(data)
+			if v, ok := data.(*models.Admin); ok && v.Email == "admin" {
+				return true
+			}
 
-			context.JSON(http.StatusBadRequest, response)
+			return false
+		},
+		Unauthorized: func(c *gin.Context, code int, message string) {
+			c.JSON(code, gin.H{
+				"code":    code,
+				"message": message,
+			})
+		},
+		// TokenLookup is a string in the form of "<source>:<name>" that is used
+		// to extract token from the request.
+		// Optional. Default value "header:Authorization".
+		// Possible values:
+		// - "header:<name>"
+		// - "query:<name>"
+		// - "cookie:<name>"
+		// - "param:<name>"
+		TokenLookup: "header: Authorization, query: token, cookie: jwt",
+		// TokenLookup: "query:token",
+		// TokenLookup: "cookie:token",
 
-			return
-		}
+		// TokenHeadName is a string in the header. Default value is "Bearer"
+		TokenHeadName: "Bearer",
 
-		code := http.StatusOK
-
-		// save project & get it's response
-		response := services.AdminRegister(*adminRepository, admin)
-
-		// save contact failed
-		if !response.Success {
-			// change http status code to 400
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
+		// TimeFunc provides the current time. You can override it to use another time value. This is useful for testing or if your server uses a different time zone than your tokens.
+		TimeFunc: time.Now,
 	})
 
-	route.PUT("/loginAdmin", func(context *gin.Context) {
-		var admin models.Admin
+	if err != nil {
+		log.Fatal("JWT Error:" + err.Error())
+	}
 
-		err := context.ShouldBindJSON(&admin)
+	// When you use jwt.New(), the function is already automatically called for checking,
+	// which means you don't need to call it again.
+	errInit := authMiddleware.MiddlewareInit()
 
-		// validation errors
-		if err != nil {
-			log.Println("Cannot unmarshal admin data, error: ", err.Error())
-			// generate validation errors response
-			response := helpers.GenerateValidationResponse(err)
+	if errInit != nil {
+		log.Fatal("authMiddleware.MiddlewareInit() Error:" + errInit.Error())
+	}
 
-			context.JSON(http.StatusBadRequest, response)
+	route.POST("/login", authMiddleware.LoginHandler)
 
-			return
-		}
-
-		code := http.StatusOK
-		response, token := services.AdminLogin(*adminRepository, admin)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.SetSameSite(http.SameSiteNoneMode)
-
-		context.SetCookie("jwt", token, 60*60*2, "/", "https://houmly-dev.herokuapp.com", true, true)
-		context.Writer.Header().Add("access-control-expose-headers", "Set-Cookie")
-		context.JSON(code, response)
+	route.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
+		claims := jwt.ExtractClaims(c)
+		log.Printf("NoRoute claims: %#v\n", claims)
+		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	})
+
+	auth := route.Group("/auth")
+	// Refresh time can be longer than token timeout
+	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+	auth.Use(authMiddleware.MiddlewareFunc())
+	{
+		auth.GET("/hello", helloHandler)
+	}
+
+	route.POST("/registerAdmin", adminController.RegisterAdminHandler)
+
+	route.PUT("/loginAdmin", adminController.LoginAdminHandler)
 
 	route.GET("/isLoggedIn", func(context *gin.Context) {
 		authCookie, err := context.Cookie("jwt")
