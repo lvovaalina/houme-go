@@ -62,7 +62,7 @@ func SetupRoutes(
 
 	var sameSite http.SameSite
 	if corsConfigs.IsProd {
-		sameSite = http.SameSiteStrictMode
+		sameSite = http.SameSiteNoneMode
 	} else {
 		sameSite = http.SameSiteNoneMode
 	}
