@@ -35,7 +35,8 @@ func SetupRoutes(
 		AllowHeaders: []string{
 			"Content-Length", "Content-Type", "Accept-Encoding",
 			"X-CSRF-Token", "Authorization", "accept", "origin",
-			"Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin"},
+			"Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin",
+			"Cookie"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
