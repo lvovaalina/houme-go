@@ -59,6 +59,14 @@ func SetupRoutes(
 	}))
 
 	var identityKey = "id"
+
+	var sameSite http.SameSite
+	if corsConfigs.IsProd {
+		sameSite = http.SameSiteStrictMode
+	} else {
+		sameSite = http.SameSiteNoneMode
+	}
+
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:          "test zone",
 		Key:            []byte("secret key"),
@@ -68,6 +76,7 @@ func SetupRoutes(
 		SendCookie:     true,
 		CookieHTTPOnly: corsConfigs.IsProd,
 		SecureCookie:   corsConfigs.IsProd,
+		CookieSameSite: sameSite,
 		CookieDomain:   corsConfigs.Domain,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			v, ok := data.(*models.Admin)
