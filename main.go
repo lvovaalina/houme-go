@@ -21,6 +21,7 @@ func main() {
 
 	env := os.Getenv("ENV")
 	dbConfigs := configs.GetDBConfigs(env)
+	corsConfigs := configs.GetCorsConfigs(env)
 	db, err := database.ConnectToDB(*dbConfigs)
 
 	//unable to connect to database
@@ -62,6 +63,7 @@ func main() {
 	adminConstroller := controllers.NewAdminController(adminRepository)
 
 	route := configs.SetupRoutes(
+		corsConfigs,
 		adminConstroller,
 		projectRepository, propertiesRepository, jobsRepository,
 		constructionJobPropertyRepository, constructionJobMaterialRepository,

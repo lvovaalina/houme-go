@@ -31,6 +31,7 @@ func helloHandler(c *gin.Context) {
 }
 
 func SetupRoutes(
+	corsConfigs *CorsConfigs,
 	adminController *controllers.AdminController,
 	projectRepository *repositories.ProjectRepository,
 	propertiesRepository *repositories.PropertyRepository,
@@ -46,7 +47,7 @@ func SetupRoutes(
 	route.Use(gin.Logger())
 
 	route.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"https://houmly-dev.herokuapp.com"},
+		AllowOrigins: []string{corsConfigs.Domain},
 		AllowMethods: []string{"POST", "OPTIONS", "GET", "PUT", "DELETE"},
 		AllowHeaders: []string{
 			"Content-Length", "Content-Type", "Accept-Encoding",
@@ -59,12 +60,15 @@ func SetupRoutes(
 
 	var identityKey = "id"
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "test zone",
-		Key:         []byte("secret key"),
-		Timeout:     time.Hour,
-		MaxRefresh:  time.Hour,
-		IdentityKey: identityKey,
-		SendCookie:  true,
+		Realm:          "test zone",
+		Key:            []byte("secret key"),
+		Timeout:        time.Hour,
+		MaxRefresh:     time.Hour,
+		IdentityKey:    identityKey,
+		SendCookie:     true,
+		CookieHTTPOnly: corsConfigs.IsProd,
+		SecureCookie:   corsConfigs.IsProd,
+		CookieDomain:   corsConfigs.Domain,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			v, ok := data.(*models.Admin)
 			log.Println("IS OK", ok)
