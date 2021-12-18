@@ -73,7 +73,6 @@ func SetupRoutes(
 		CookieDomain:   corsConfigs.Domain,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			v, ok := data.(*models.Admin)
-			log.Println("IS OK", ok)
 			if ok {
 				log.Println(v.Email)
 				return jwt.MapClaims{
@@ -168,29 +167,6 @@ func SetupRoutes(
 
 	route.PUT("/loginAdmin", adminController.LoginAdminHandler)
 
-	route.GET("/isLoggedIn", func(context *gin.Context) {
-		authCookie, err := context.Cookie("jwt")
-		if err != nil {
-			log.Println("ERROR: ", err.Error())
-			response := err.Error()
-
-			context.JSON(http.StatusBadRequest, response)
-
-			return
-		}
-
-		log.Println(authCookie)
-
-		isAuthentificated, _ := services.IsAuthentificated(authCookie)
-		if !isAuthentificated {
-			context.JSON(http.StatusUnauthorized, "Not authorized")
-			return
-		}
-
-		context.JSON(http.StatusOK, "logged in")
-
-		return
-	})
 	route.POST("/create", func(context *gin.Context) {
 		// initialization project model
 		var project models.Project
@@ -376,24 +352,6 @@ func SetupRoutes(
 
 	route.GET("/getJobProperties", func(context *gin.Context) {
 		code := http.StatusOK
-
-		authCookie, err := context.Cookie("jwt")
-		if err != nil {
-			log.Println("ERROR: ", err.Error())
-			response := err.Error()
-
-			context.JSON(http.StatusBadRequest, response)
-
-			return
-		}
-
-		log.Println(authCookie)
-
-		isAuthentificated, _ := services.IsAuthentificated(authCookie)
-		if !isAuthentificated {
-			context.JSON(http.StatusUnauthorized, "Not authorized")
-			return
-		}
 
 		response := services.FindJobProperties(*constructionJobPropertiesRepository)
 
