@@ -6,7 +6,7 @@ import (
 	"bitbucket.org/houmeteam/houme-go/repositories"
 )
 
-func FindAllJobs(repository repositories.JobRepository) dtos.Response {
+func FindAllJobs(repository *repositories.JobRepository) dtos.Response {
 	operationResult := repository.FindAll()
 
 	if operationResult.Error != nil {

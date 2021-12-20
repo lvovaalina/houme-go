@@ -61,14 +61,20 @@ func main() {
 	adminRepository := repositories.NewAdminRepository(db)
 
 	adminConstroller := controllers.NewAdminController(adminRepository)
+	projectsController := controllers.NewProjectsController(
+		projectRepository, constructionJobPropertyRepository, projectJobRepository,
+		projectPropertyRepository, jobsRepository, constructionJobMaterialRepository, projectMaterialRepository)
+	constructionPropertiesController := controllers.NewConstructionPropertiesController(
+		projectRepository, constructionJobPropertyRepository, projectJobRepository,
+		projectPropertyRepository, jobsRepository, constructionJobMaterialRepository, projectMaterialRepository)
+	commonController := controllers.NewCommonController(propertiesRepository, jobsRepository)
 
 	route := configs.SetupRoutes(
 		corsConfigs,
 		adminConstroller,
-		projectRepository, propertiesRepository, jobsRepository,
-		constructionJobPropertyRepository, constructionJobMaterialRepository,
-		projectJobRepository, projectPropertyRepository, projectMaterialRepository,
-		adminRepository)
+		projectsController,
+		constructionPropertiesController,
+		commonController)
 
 	route.Run(":" + port)
 }

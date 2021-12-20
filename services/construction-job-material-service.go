@@ -6,7 +6,7 @@ import (
 	"bitbucket.org/houmeteam/houme-go/repositories"
 )
 
-func FindJobMaterials(repository repositories.ConstructionJobMaterialRepository) dtos.Response {
+func FindJobMaterials(repository *repositories.ConstructionJobMaterialRepository) dtos.Response {
 	operationResult := repository.FindMaterials()
 
 	if operationResult.Error != nil {
@@ -18,7 +18,7 @@ func FindJobMaterials(repository repositories.ConstructionJobMaterialRepository)
 	return dtos.Response{Success: true, Data: datas}
 }
 
-func CreateMaterial(material *models.ConstructionJobMaterial, repository repositories.ConstructionJobMaterialRepository) dtos.Response {
+func CreateMaterial(material *models.ConstructionJobMaterial, repository *repositories.ConstructionJobMaterialRepository) dtos.Response {
 	operationResult := repository.Save(material)
 
 	if operationResult.Error != nil {
@@ -30,7 +30,7 @@ func CreateMaterial(material *models.ConstructionJobMaterial, repository reposit
 	return dtos.Response{Success: true, Data: data}
 }
 
-func FindJobMaterialById(id string, repository repositories.ConstructionJobMaterialRepository) dtos.Response {
+func FindJobMaterialById(id string, repository *repositories.ConstructionJobMaterialRepository) dtos.Response {
 	operationResult := repository.FindJobMaterialById(id)
 
 	if operationResult.Error != nil {
@@ -43,7 +43,7 @@ func FindJobMaterialById(id string, repository repositories.ConstructionJobMater
 }
 
 func UpdateJobMaterialById(id string, jobMaterial models.ConstructionJobMaterial,
-	repository repositories.ConstructionJobMaterialRepository) dtos.Response {
+	repository *repositories.ConstructionJobMaterialRepository) dtos.Response {
 
 	existingPropertyResponse := FindJobMaterialById(id, repository)
 
@@ -66,7 +66,7 @@ func UpdateJobMaterialById(id string, jobMaterial models.ConstructionJobMaterial
 	return dtos.Response{Success: true, Data: operationResult.Result}
 }
 
-func DeleteJobMaterialById(id string, repository repositories.ConstructionJobMaterialRepository) dtos.Response {
+func DeleteJobMaterialById(id string, repository *repositories.ConstructionJobMaterialRepository) dtos.Response {
 	operationResult := repository.DeleteJobMaterialById(id)
 
 	if operationResult.Error != nil {

@@ -6,7 +6,7 @@ import (
 	"bitbucket.org/houmeteam/houme-go/repositories"
 )
 
-func FindJobProperties(repository repositories.ConstructionJobPropertyRepository) dtos.Response {
+func FindJobProperties(repository *repositories.ConstructionJobPropertyRepository) dtos.Response {
 	operationResult := repository.FindPropertiesByCompanyName("Construction")
 
 	if operationResult.Error != nil {
@@ -18,7 +18,7 @@ func FindJobProperties(repository repositories.ConstructionJobPropertyRepository
 	return dtos.Response{Success: true, Data: datas}
 }
 
-func FindJobPropertyById(id string, repository repositories.ConstructionJobPropertyRepository) dtos.Response {
+func FindJobPropertyById(id string, repository *repositories.ConstructionJobPropertyRepository) dtos.Response {
 	operationResult := repository.FindJobPropertyById(id)
 
 	if operationResult.Error != nil {
@@ -31,7 +31,7 @@ func FindJobPropertyById(id string, repository repositories.ConstructionJobPrope
 }
 
 func UpdateJobPropertyById(id string, jobProperty models.ConstructionJobProperty,
-	repository repositories.ConstructionJobPropertyRepository) dtos.Response {
+	repository *repositories.ConstructionJobPropertyRepository) dtos.Response {
 
 	existingPropertyResponse := FindJobPropertyById(id, repository)
 

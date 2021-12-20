@@ -16,7 +16,7 @@ func NewPropertyRepository(db *gorm.DB) *PropertyRepository {
 func (r *PropertyRepository) FindAll() RepositoryResult {
 	var properties []models.Property
 
-	err := r.db.Find(&properties).Error
+	err := r.db.Find(&properties).Order("id").Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}

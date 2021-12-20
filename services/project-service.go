@@ -14,10 +14,10 @@ import (
 
 func CreateProject(
 	project *models.Project,
-	repository repositories.ProjectRepository,
-	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
-	jobsRepository repositories.JobRepository,
-	constructionJobMaterialRepository repositories.ConstructionJobMaterialRepository) dtos.Response {
+	repository *repositories.ProjectRepository,
+	constructionJobPropertyRepository *repositories.ConstructionJobPropertyRepository,
+	jobsRepository *repositories.JobRepository,
+	constructionJobMaterialRepository *repositories.ConstructionJobMaterialRepository) dtos.Response {
 
 	setProjectJobsResult := setProjectJobs(
 		project, nil, constructionJobPropertyRepository, jobsRepository, constructionJobMaterialRepository)
@@ -40,13 +40,13 @@ func CreateProject(
 func UpdateProjectById(
 	id string,
 	project *models.Project,
-	repository repositories.ProjectRepository,
-	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
-	projectJobRepository repositories.ProjectJobRepository,
-	projectPropertyRepository repositories.ProjectPropertyRepository,
-	jobsRepository repositories.JobRepository,
-	constructionJobMaterialRepository repositories.ConstructionJobMaterialRepository,
-	projectMaterialRepository repositories.ProjectMaterialRepository) dtos.Response {
+	repository *repositories.ProjectRepository,
+	constructionJobPropertyRepository *repositories.ConstructionJobPropertyRepository,
+	projectJobRepository *repositories.ProjectJobRepository,
+	projectPropertyRepository *repositories.ProjectPropertyRepository,
+	jobsRepository *repositories.JobRepository,
+	constructionJobMaterialRepository *repositories.ConstructionJobMaterialRepository,
+	projectMaterialRepository *repositories.ProjectMaterialRepository) dtos.Response {
 
 	log.Println("Start update project with id: ", id)
 
@@ -126,12 +126,12 @@ func UpdateProjectById(
 func UpdateProjectProperties(
 	id string,
 	project *models.Project,
-	repository repositories.ProjectRepository,
-	jobsRepository repositories.JobRepository,
-	projectJobRepository repositories.ProjectJobRepository,
-	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
-	constructionJobMaterialRepository repositories.ConstructionJobMaterialRepository,
-	projectMaterialRepository repositories.ProjectMaterialRepository) dtos.Response {
+	repository *repositories.ProjectRepository,
+	jobsRepository *repositories.JobRepository,
+	projectJobRepository *repositories.ProjectJobRepository,
+	constructionJobPropertyRepository *repositories.ConstructionJobPropertyRepository,
+	constructionJobMaterialRepository *repositories.ConstructionJobMaterialRepository,
+	projectMaterialRepository *repositories.ProjectMaterialRepository) dtos.Response {
 
 	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(id)
 	if projectJobDeleteResult.Error != nil {
@@ -185,7 +185,7 @@ func UpdateProjectProperties(
 	return setProjectJobsResult
 }
 
-func GetAllProjects(repository repositories.ProjectRepository) dtos.Response {
+func GetAllProjects(repository *repositories.ProjectRepository) dtos.Response {
 	operationResult := repository.FindAll()
 
 	if operationResult.Error != nil {
@@ -202,10 +202,10 @@ func GetAllProjects(repository repositories.ProjectRepository) dtos.Response {
 }
 
 func DeleteProjectById(
-	id string, repository repositories.ProjectRepository,
-	projectPropertyRepository repositories.ProjectPropertyRepository,
-	projectJobRepository repositories.ProjectJobRepository,
-	projectMaterialRepository repositories.ProjectMaterialRepository) dtos.Response {
+	id string, repository *repositories.ProjectRepository,
+	projectPropertyRepository *repositories.ProjectPropertyRepository,
+	projectJobRepository *repositories.ProjectJobRepository,
+	projectMaterialRepository *repositories.ProjectMaterialRepository) dtos.Response {
 	projectPropertyRepository.DeleteProjectPropertiesByProjectId(id)
 	projectJobRepository.DeleteProjectJobsByProjectId(id)
 	projectMaterialRepository.DeleteProjectMaterialsByProjectId(id)
@@ -218,7 +218,7 @@ func DeleteProjectById(
 	return dtos.Response{Success: true}
 }
 
-func GetProjectById(id string, repository repositories.ProjectRepository) dtos.Response {
+func GetProjectById(id string, repository *repositories.ProjectRepository) dtos.Response {
 	operationResult := repository.GetProjectById(id)
 
 	if operationResult.Error != nil {
@@ -233,12 +233,12 @@ func GetProjectById(id string, repository repositories.ProjectRepository) dtos.R
 }
 
 func UpdateProjectsJobs(
-	projectRepository repositories.ProjectRepository,
-	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
-	projectJobRepository repositories.ProjectJobRepository,
-	jobsRepository repositories.JobRepository,
-	constructionJobMaterialRepository repositories.ConstructionJobMaterialRepository,
-	projectMaterialsRepository repositories.ProjectMaterialRepository) dtos.Response {
+	projectRepository *repositories.ProjectRepository,
+	constructionJobPropertyRepository *repositories.ConstructionJobPropertyRepository,
+	projectJobRepository *repositories.ProjectJobRepository,
+	jobsRepository *repositories.JobRepository,
+	constructionJobMaterialRepository *repositories.ConstructionJobMaterialRepository,
+	projectMaterialsRepository *repositories.ProjectMaterialRepository) dtos.Response {
 	getAllProjectsResult := projectRepository.FindAllProjects()
 	if getAllProjectsResult.Error != nil {
 		log.Println("Failed to retrieve all project for update")
@@ -257,7 +257,7 @@ func UpdateProjectsJobs(
 	for _, project := range *projects {
 		updateProjectJob(
 			&project,
-			&projectRepository,
+			projectRepository,
 			constructionJobPropertyRepository,
 			projectJobRepository,
 			jobsRepository,
@@ -271,11 +271,11 @@ func UpdateProjectsJobs(
 func updateProjectJob(
 	project *models.Project,
 	repository *repositories.ProjectRepository,
-	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
-	projectJobRepository repositories.ProjectJobRepository,
-	jobsRepository repositories.JobRepository,
-	constructionJobMaterialRepository repositories.ConstructionJobMaterialRepository,
-	projectMaterialRepository repositories.ProjectMaterialRepository) dtos.Response {
+	constructionJobPropertyRepository *repositories.ConstructionJobPropertyRepository,
+	projectJobRepository *repositories.ProjectJobRepository,
+	jobsRepository *repositories.JobRepository,
+	constructionJobMaterialRepository *repositories.ConstructionJobMaterialRepository,
+	projectMaterialRepository *repositories.ProjectMaterialRepository) dtos.Response {
 
 	projectJobDeleteResult := projectJobRepository.DeleteProjectJobsByProjectId(strconv.Itoa(project.ProjectId))
 	if projectJobDeleteResult.Error != nil {
@@ -313,9 +313,9 @@ func updateProjectJob(
 func setProjectJobs(
 	project *models.Project,
 	existingProject *models.Project,
-	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository,
-	jobsRepository repositories.JobRepository,
-	constructionJobMaterialRepository repositories.ConstructionJobMaterialRepository) dtos.Response {
+	constructionJobPropertyRepository *repositories.ConstructionJobPropertyRepository,
+	jobsRepository *repositories.JobRepository,
+	constructionJobMaterialRepository *repositories.ConstructionJobMaterialRepository) dtos.Response {
 	constructionPropertiesRepositoryResult := constructionJobPropertyRepository.
 		FindPropertiesByCompanyName(project.ConstructionCompanyName)
 
