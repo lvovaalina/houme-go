@@ -12,4 +12,5 @@ type Admin struct {
 	Password       []byte
 	PasswordString string `gorm:"-"`
 	LastLoginDate  time.Time
+	Role           string
 }

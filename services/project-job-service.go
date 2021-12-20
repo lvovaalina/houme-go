@@ -21,9 +21,9 @@ type ProjectJobsVM struct {
 
 func FindJobsByProjectId(
 	projectId string,
-	repository repositories.ProjectJobRepository,
-	projectPropertiesRepository repositories.ProjectPropertyRepository,
-	constructionJobPropertyRepository repositories.ConstructionJobPropertyRepository) dtos.Response {
+	repository *repositories.ProjectJobRepository,
+	projectPropertiesRepository *repositories.ProjectPropertyRepository,
+	constructionJobPropertyRepository *repositories.ConstructionJobPropertyRepository) dtos.Response {
 	operationResult := repository.FindProjectJobsByProjectId(projectId)
 
 	if operationResult.Error != nil {

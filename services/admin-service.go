@@ -1,8 +1,7 @@
 package services
 
 import (
-	"strconv"
-	"time"
+	"log"
 
 	"bitbucket.org/houmeteam/houme-go/dtos"
 	"bitbucket.org/houmeteam/houme-go/models"
@@ -33,37 +32,29 @@ func AdminRegister(
 
 func AdminLogin(
 	repository *repositories.AdminRepository,
-	admin models.Admin) (response dtos.Response, token string) {
-	token = ""
-	response = dtos.Response{Success: true}
+	admin models.Admin) dtos.Response {
+
+	response := dtos.Response{Success: true}
+
 	operationResult := repository.GetByEmail(admin.Email)
 	if operationResult.Error != nil {
 		response = dtos.Response{Success: false, Message: operationResult.Error.Error()}
-		return
+		return response
 	}
 
 	var existingAdmin = operationResult.Result.(*models.Admin)
 	if existingAdmin.ID == 0 {
 		response = dtos.Response{Success: false, Message: emailOrPasswordInvalid}
-		return
+		return response
 	}
 
+	log.Println(existingAdmin)
 	if err := bcrypt.CompareHashAndPassword(existingAdmin.Password, []byte(admin.PasswordString)); err != nil {
 		response = dtos.Response{Success: false, Message: emailOrPasswordInvalid}
-		return
+		return response
 	}
 
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Issuer:    strconv.Itoa(int(admin.ID)),
-		ExpiresAt: time.Now().Add(time.Hour * 2).Unix(), //2 hours
-	})
-
-	token, err := claims.SignedString([]byte(secret))
-	if err != nil {
-		response = dtos.Response{Success: false, Message: "Could not login"}
-	}
-
-	return
+	return response
 }
 
 func AdminLogout() {
