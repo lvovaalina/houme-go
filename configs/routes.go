@@ -43,9 +43,9 @@ func SetupRoutes(
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:          "test zone",
 		Key:            []byte("secret key"),
-		Timeout:        time.Minute * 10,
-		CookieMaxAge:   time.Minute * 10,
-		MaxRefresh:     time.Minute * 10,
+		Timeout:        time.Hour,
+		CookieMaxAge:   time.Hour,
+		MaxRefresh:     time.Hour,
 		IdentityKey:    identityKey,
 		SendCookie:     true,
 		CookieHTTPOnly: corsConfigs.IsProd,
@@ -143,15 +143,18 @@ func SetupRoutes(
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
 		auth.GET("/getAdminInfo", adminController.GetAdminInfoHandler)
-		auth.PUT("/updateProject/:id", projectsController.UpdateProjectByIdHandler)
-		auth.GET("/getJobProperties", constructionPropertiesController.GetJobPropertiesHandler)
+
 		auth.POST("/create", projectsController.CreateProjectHandler)
+		auth.PUT("/updateProject/:id", projectsController.UpdateProjectByIdHandler)
 		auth.DELETE("/deleteProject/:id", projectsController.DeleteProjectByIdHandler)
 		auth.GET("/getProjectJobs/:projectId", projectsController.GetProjectJobsByProjectIdHandler)
 		auth.PUT("/updateProjects", projectsController.UpdateProjectsHandler)
+
+		auth.GET("/getJobProperties", constructionPropertiesController.GetJobPropertiesHandler)
+		auth.PUT("/updateJobProperty/:id", constructionPropertiesController.UpdateJobPropertyByIdHandler)
+
 		auth.POST("/createMaterial", constructionPropertiesController.CreateMaterialHandler)
 		auth.DELETE("/deleteJobMaterial/:id", constructionPropertiesController.DeleteJobMaterialByIdHandler)
-		auth.PUT("/updateJobProperty/:id", constructionPropertiesController.UpdateJobPropertyByIdHandler)
 		auth.PUT("/updateJobMaterial/:id", constructionPropertiesController.UpdateJobMaterialByIdHandler)
 		auth.GET("/getJobMaterials", constructionPropertiesController.GetMaterialsHandler)
 	}
@@ -160,7 +163,7 @@ func SetupRoutes(
 
 	route.GET("/getProperties", commonController.GetProperties)
 
-	route.GET("/getJobs")
+	route.GET("/getJobs", commonController.GetJobsHandler)
 
 	route.PUT("/updateProjectProperties/:id", projectsController.UpdateProjectPropertiesByIdHandler)
 
