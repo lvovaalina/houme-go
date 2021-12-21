@@ -127,7 +127,7 @@ func SetupRoutes(
 	}
 
 	route.POST("/login", authMiddleware.LoginHandler)
-	route.POST("/registerAdmin", adminController.RegisterAdminHandler)
+	//route.POST("/registerAdmin", adminController.RegisterAdminHandler)
 
 	route.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
