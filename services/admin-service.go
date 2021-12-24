@@ -2,6 +2,7 @@ package services
 
 import (
 	"log"
+	"strings"
 
 	"bitbucket.org/houmeteam/houme-go/dtos"
 	"bitbucket.org/houmeteam/houme-go/models"
@@ -36,7 +37,7 @@ func AdminLogin(
 
 	response := dtos.Response{Success: true}
 
-	operationResult := repository.GetByEmail(admin.Email)
+	operationResult := repository.GetByEmail(strings.ToLower(admin.Email))
 	if operationResult.Error != nil {
 		response = dtos.Response{Success: false, Message: operationResult.Error.Error()}
 		return response
