@@ -11,6 +11,7 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 
 	"bitbucket.org/houmeteam/houme-go/controllers"
+	"bitbucket.org/houmeteam/houme-go/forge"
 	"bitbucket.org/houmeteam/houme-go/models"
 )
 
@@ -157,6 +158,13 @@ func SetupRoutes(
 		auth.DELETE("/deleteJobMaterial/:id", constructionPropertiesController.DeleteJobMaterialByIdHandler)
 		auth.PUT("/updateJobMaterial/:id", constructionPropertiesController.UpdateJobMaterialByIdHandler)
 		auth.GET("/getJobMaterials", constructionPropertiesController.GetMaterialsHandler)
+
+		auth.POST("/upload", commonController.ForgeUploadHandler)
+		auth.POST("/translate", commonController.ForgeTranslateHandler)
+		auth.POST("/createBucket", func(c *gin.Context) {
+			forge.CreateBucket("houmly")
+		})
+		auth.GET("/forgeGet", commonController.ForgeGetHandler)
 	}
 
 	route.GET("/getProjects", projectsController.GetProjectsHandler)
@@ -168,8 +176,6 @@ func SetupRoutes(
 	route.PUT("/updateProjectProperties/:id", projectsController.UpdateProjectPropertiesByIdHandler)
 
 	route.GET("/getProject/:id", projectsController.GetProjectByIdHandler)
-
-	route.GET("/forgeGet", commonController.ForgeGetHandler)
 
 	return route
 }
