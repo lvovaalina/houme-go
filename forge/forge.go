@@ -13,8 +13,8 @@ import (
 
 var (
 	baseUrl      = "https://developer.api.autodesk.com/"
-	clentId      = "HjKvq1UCmrAOpHBp97m0lfgYEGEB7E2V"
-	clientSecret = "1wuJ3vwrxbqnuxjP"
+	clentId      = "iTsiwR4RGLuOJdyXz49v3szapWzzxGs3"
+	clientSecret = "xI2RjkCJiIbLEMPF"
 	grantType    = "client_credentials"
 	scope        = "data:read data:write data:create bucket:create bucket:read bucket:delete"
 	token        = ""
