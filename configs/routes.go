@@ -165,6 +165,7 @@ func SetupRoutes(
 			forge.CreateBucket("houmly")
 		})
 		auth.GET("/forgeGet", commonController.ForgeGetHandler)
+		auth.GET("/translationStatus", commonController.ForgeTranslationStatusHandler)
 	}
 
 	route.GET("/getProjects", projectsController.GetProjectsHandler)

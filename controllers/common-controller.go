@@ -70,8 +70,15 @@ func (c *CommonController) ForgeTranslateHandler(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"message": err})
 	}
 
-	forge.TranslateFile("houme", result.FileName)
+	forge.TranslateFile("houmly", result.FileName)
 	context.JSON(http.StatusOK, gin.H{"message": "ok"})
+}
+
+func (c *CommonController) ForgeTranslationStatusHandler(context *gin.Context) {
+
+	forge.GetTranslationStatus("houmly", "Classic_house.rvt")
+	context.JSON(http.StatusOK, gin.H{
+		"message": "ok"})
 }
 
 func (c *CommonController) GetProperties(context *gin.Context) {
