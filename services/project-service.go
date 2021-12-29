@@ -323,13 +323,9 @@ func setProjectJobs(
 		return dtos.Response{Success: false, Message: constructionPropertiesRepositoryResult.Error.Error()}
 	}
 
-	projectJobsRepositoryResult := jobsRepository.FindProjectJobs(
-		project.WallMaterial,
-		project.FoundationMaterial,
-		project.RoofingMaterial,
-		project.FinishMaterial)
-	if projectJobsRepositoryResult.Error != nil {
-		return dtos.Response{Success: false, Message: projectJobsRepositoryResult.Error.Error()}
+	projectJobsRepositoryResult := FindProjectJobs(jobsRepository, *project)
+	if !projectJobsRepositoryResult.Success {
+		return projectJobsRepositoryResult
 	}
 
 	project.ProjectJobs = []models.ProjectJob{}
@@ -340,7 +336,7 @@ func setProjectJobs(
 	}
 
 	jobIds := []int{}
-	for _, job := range *projectJobsRepositoryResult.Result.(*[]models.Job) {
+	for _, job := range *projectJobsRepositoryResult.Data.(*[]models.Job) {
 		project.ProjectJobs = append(project.ProjectJobs, converters.ConvertJobToProjectJob(job))
 		if existingProject != nil {
 			existingProject.ProjectJobs = append(existingProject.ProjectJobs, converters.ConvertJobToProjectJob(job))
