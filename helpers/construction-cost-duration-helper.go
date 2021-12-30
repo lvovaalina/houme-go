@@ -52,7 +52,7 @@ func CalculateCostDurationForProjectJobs(
 		constrDurInHours := int(math.Ceil(float64(constrDur)))
 		constrDurInDays := int(math.Ceil(float64(constrDurInHours) / workingHoursInDay))
 
-		constrCost := math.Round(float64(float32(constrDurInHours)*jobProp.ConstructionCost) * float64(constrWorkNumber))
+		constrCost := calculateCost(constrDurInHours, jobProp.ConstructionCost, constrWorkNumber)
 
 		calcJob := JobCalculations{
 			ConstructionWorkers:         constrWorkNumber,
