@@ -25,15 +25,15 @@ func (r *ProjectRepository) Save(project *models.Project) RepositoryResult {
 }
 
 func (r *ProjectRepository) FindAll() RepositoryResult {
-	var properties []models.ProjectMin
+	var projects []models.ProjectMin
 
-	err := r.db.Model(&models.Project{}).Find(&properties).Error
+	err := r.db.Order("project_id").Model(&models.Project{}).Find(&projects).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}
 	}
 
-	return RepositoryResult{Result: &properties}
+	return RepositoryResult{Result: &projects}
 }
 
 func (r *ProjectRepository) FindAllProjects() RepositoryResult {
@@ -43,7 +43,8 @@ func (r *ProjectRepository) FindAllProjects() RepositoryResult {
 		Preload("ProjectJobs.Job").
 		Preload("ProjectJobs.Job.Property").
 		Preload("ProjectProperties").
-		Preload("ProjectProperties.Property").Find(&projects).Error
+		Preload("ProjectProperties.Property").
+		Find(&projects).Error
 
 	if err != nil {
 		return RepositoryResult{Error: err}
@@ -69,6 +70,10 @@ func (r *ProjectRepository) GetProjectById(id string) RepositoryResult {
 		Preload("ProjectJobs.Job.Property").
 		Preload("ProjectProperties").
 		Preload("ProjectProperties.Property").
+		Preload("ProjectMaterials").
+		Preload("ProjectMaterials.ConstructionJobMaterial").
+		Preload("ProjectMaterials.ConstructionJobMaterial.Job").
+		Preload("ProjectMaterials.ConstructionJobMaterial.Job.Property").
 		First(&project, id).Error
 
 	if err != nil {

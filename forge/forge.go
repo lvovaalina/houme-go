@@ -13,8 +13,8 @@ import (
 
 var (
 	baseUrl      = "https://developer.api.autodesk.com/"
-	clentId      = "HjKvq1UCmrAOpHBp97m0lfgYEGEB7E2V"
-	clientSecret = "1wuJ3vwrxbqnuxjP"
+	clentId      = "iTsiwR4RGLuOJdyXz49v3szapWzzxGs3"
+	clientSecret = "xI2RjkCJiIbLEMPF"
 	grantType    = "client_credentials"
 	scope        = "data:read data:write data:create bucket:create bucket:read bucket:delete"
 	token        = ""
@@ -45,7 +45,7 @@ func Authentificate() string {
 		log.Println("Can not unmarshal JSON")
 	}
 
-	//log.Println("TOKEN: " + result.AccessToken)
+	log.Println("TOKEN: " + result.AccessToken)
 
 	return result.AccessToken
 }
@@ -329,10 +329,11 @@ func TranslateFile(bucketKey string, fileName string) {
 
 func GetTranslationStatus(bucketKey string, fileName string) {
 	urn := getFileUrn(bucketKey, fileName)
+	//urn := "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6aG91bWUvRHVwbGV4LnJ2dA=="
 	fmt.Println(urn)
 	token = GetAuthToken(false)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", baseUrl+"modelderivative/v2/designdata/"+urn+"/manifest?domain=localhost:5000", nil)
+	req, err := http.NewRequest("GET", baseUrl+"modelderivative/v2/designdata/"+urn+"/manifest?domain=localhost:5001", nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -364,7 +365,6 @@ func GetTranslationStatus(bucketKey string, fileName string) {
 
 func GetFileData(bucketKey string, fileName string, getMetadata bool) {
 	urn := getFileUrn(bucketKey, fileName)
-	//urn := "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6aG91bWUtdGVzdC90ZXN0LXByb2plY3QucnZ0"
 	guid := "c6c90385-d1a1-d45d-e544-d41905d396d0"
 	token = GetAuthToken(false)
 	client := &http.Client{}

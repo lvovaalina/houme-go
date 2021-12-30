@@ -8,335 +8,175 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
-	"bitbucket.org/houmeteam/houme-go/helpers"
+	jwt "github.com/appleboy/gin-jwt/v2"
+
+	"bitbucket.org/houmeteam/houme-go/controllers"
+	"bitbucket.org/houmeteam/houme-go/forge"
 	"bitbucket.org/houmeteam/houme-go/models"
-	"bitbucket.org/houmeteam/houme-go/repositories"
-	"bitbucket.org/houmeteam/houme-go/services"
 )
 
+var identityKey = "id"
+
 func SetupRoutes(
-	projectRepository *repositories.ProjectRepository,
-	propertiesRepository *repositories.PropertyRepository,
-	jobsRepository *repositories.JobRepository,
-	constructionJobPropertiesRepository *repositories.ConstructionJobPropertyRepository,
-	constructionJobMaterialsRepository *repositories.ConstructionJobMaterialRepository,
-	projectJobRepository *repositories.ProjectJobRepository,
-	projectPropertyRepository *repositories.ProjectPropertyRepository) *gin.Engine {
+	corsConfigs *CorsConfigs,
+	adminController *controllers.AdminController,
+	projectsController *controllers.ProjectsController,
+	constructionPropertiesController *controllers.ConstructionPropertiesController,
+	commonController *controllers.CommonController) *gin.Engine {
 	route := gin.Default()
 
 	route.Use(gin.Logger())
 
 	route.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"POST", "OPTIONS", "GET", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Content-Length", "Content-Type", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"},
+		AllowOrigins: []string{corsConfigs.Domain},
+		AllowMethods: []string{"POST", "OPTIONS", "GET", "PUT", "DELETE"},
+		AllowHeaders: []string{
+			"Content-Length", "Content-Type", "Accept-Encoding",
+			"X-CSRF-Token", "Authorization", "accept", "origin",
+			"Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin",
+			"Cookie"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
 
-	route.POST("/create", func(context *gin.Context) {
-		// initialization project model
-		var project models.Project
+	var identityKey = "id"
 
-		// validate json
-		err := context.ShouldBindJSON(&project)
+	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
+		Realm:          "test zone",
+		Key:            []byte("secret key"),
+		Timeout:        time.Hour,
+		CookieMaxAge:   time.Hour,
+		MaxRefresh:     time.Hour,
+		IdentityKey:    identityKey,
+		SendCookie:     true,
+		CookieHTTPOnly: corsConfigs.IsProd,
+		SecureCookie:   true,
+		CookieSameSite: http.SameSiteNoneMode,
+		CookieDomain:   corsConfigs.Domain,
+		PayloadFunc: func(data interface{}) jwt.MapClaims {
+			v, ok := data.(*models.Admin)
+			if ok {
+				return jwt.MapClaims{
+					identityKey: v.Email,
+					"Role":      v.Role,
+				}
+			}
+			return jwt.MapClaims{}
+		},
+		IdentityHandler: func(c *gin.Context) interface{} {
+			claims := jwt.ExtractClaims(c)
+			return &models.Admin{
+				Email: claims[identityKey].(string),
+				Role:  claims["Role"].(string),
+			}
+		},
+		Authenticator: func(c *gin.Context) (interface{}, error) {
+			var loginVals models.Admin
+			if err := c.ShouldBindJSON(&loginVals); err != nil {
+				return "", jwt.ErrMissingLoginValues
+			}
 
-		// validation errors
-		if err != nil {
-			log.Println("Cannot unmarshal project, error: ", err.Error())
-			// generate validation errors response
-			response := helpers.GenerateValidationResponse(err)
+			response := adminController.LoginAdminHandler(loginVals)
+			if response.Success {
+				return &models.Admin{
+					Email: loginVals.Email,
+					Role:  "admin",
+				}, nil
+			}
 
-			context.JSON(http.StatusBadRequest, response)
+			return nil, jwt.ErrFailedAuthentication
+		},
+		Authorizator: func(data interface{}, c *gin.Context) bool {
+			if v, ok := data.(*models.Admin); ok && v.Role == "admin" {
+				return true
+			}
 
-			return
-		}
+			return false
+		},
+		Unauthorized: func(c *gin.Context, code int, message string) {
+			c.JSON(code, gin.H{
+				"code":    code,
+				"message": message,
+			})
+		},
+		// TokenLookup is a string in the form of "<source>:<name>" that is used
+		// to extract token from the request.
+		// Optional. Default value "header:Authorization".
+		// Possible values:
+		// - "header:<name>"
+		// - "query:<name>"
+		// - "cookie:<name>"
+		// - "param:<name>"
+		TokenLookup: "cookie: jwt",
+		// TokenLookup: "query:token",
+		// TokenLookup: "cookie:token",
 
-		// default http status code = 200
-		code := http.StatusOK
-
-		// save project & get it's response
-		response := services.CreateProject(
-			&project, *projectRepository, *constructionJobPropertiesRepository, *jobsRepository)
-
-		// save contact failed
-		if !response.Success {
-			// change http status code to 400
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
+		// TimeFunc provides the current time. You can override it to use another time value. This is useful for testing or if your server uses a different time zone than your tokens.
+		TimeFunc: time.Now,
 	})
 
-	route.GET("/getProperties", func(context *gin.Context) {
-		code := http.StatusOK
+	if err != nil {
+		log.Fatal("JWT Error:" + err.Error())
+	}
 
-		response := services.FindAllProperties(*propertiesRepository)
+	// When you use jwt.New(), the function is already automatically called for checking,
+	// which means you don't need to call it again.
+	errInit := authMiddleware.MiddlewareInit()
 
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
+	if errInit != nil {
+		log.Fatal("authMiddleware.MiddlewareInit() Error:" + errInit.Error())
+	}
 
-		context.JSON(code, response)
+	route.POST("/login", authMiddleware.LoginHandler)
+	//route.POST("/registerAdmin", adminController.RegisterAdminHandler)
+
+	route.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
+		claims := jwt.ExtractClaims(c)
+		log.Printf("NoRoute claims: %#v\n", claims)
+		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	})
 
-	route.GET("/getJobs", func(context *gin.Context) {
-		code := http.StatusOK
-
-		response := services.FindAllJobs(*jobsRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.GET("/getProjects", func(context *gin.Context) {
-		code := http.StatusOK
-
-		response := services.GetAllProjects(*projectRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.DELETE("/deleteProject/:id", func(context *gin.Context) {
-		id := context.Param("id")
-
-		code := http.StatusOK
-
-		response := services.DeleteProjectById(id, *projectRepository, *projectPropertyRepository, *projectJobRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.GET("/getProjectJobs/:projectId", func(context *gin.Context) {
-		projectId := context.Param("projectId")
-
-		code := http.StatusOK
-
-		response := services.FindJobsByProjectId(
-			projectId,
-			*projectJobRepository,
-			*projectPropertyRepository,
-			*constructionJobPropertiesRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.GET("/getProject/:id", func(context *gin.Context) {
-		id := context.Param("id")
-
-		code := http.StatusOK
-
-		response := services.GetProjectById(id, *projectRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.PUT("/updateProject/:id", func(context *gin.Context) {
-		id := context.Param("id")
-
-		var project models.Project
-
-		err := context.ShouldBindJSON(&project)
-
-		// validation errors
-		if err != nil {
-			log.Println("ERROR: ", err.Error())
-			response := err.Error()
-
-			context.JSON(http.StatusBadRequest, response)
-
-			return
-		}
-
-		code := http.StatusOK
-
-		response := services.UpdateProjectById(
-			id, &project, *projectRepository,
-			*constructionJobPropertiesRepository,
-			*projectJobRepository, *projectPropertyRepository, *jobsRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.PUT("/updateProjectProperties/:id", func(context *gin.Context) {
-		id := context.Param("id")
-
-		var project models.Project
-
-		err := context.ShouldBindJSON(&project)
-
-		// validation errors
-		if err != nil {
-			log.Println("ERROR: ", err.Error())
-			response := err.Error()
-
-			context.JSON(http.StatusBadRequest, response)
-
-			return
-		}
-
-		code := http.StatusOK
-
-		response := services.UpdateProjectProperties(
-			id, &project, *projectRepository,
-			*jobsRepository, *projectJobRepository, *constructionJobPropertiesRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-	route.GET("/getJobProperties", func(context *gin.Context) {
-		code := http.StatusOK
-
-		response := services.FindJobProperties(*constructionJobPropertiesRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.PUT("/updateJobProperty/:id", func(context *gin.Context) {
-		id := context.Param("id")
-
-		var jobProperty models.ConstructionJobProperty
-
-		err := context.ShouldBindJSON(&jobProperty)
-
-		// validation errors
-		if err != nil {
-			log.Println(err.Error())
-			response := helpers.GenerateValidationResponse(err)
-
-			context.JSON(http.StatusBadRequest, response)
-
-			return
-		}
-
-		code := http.StatusOK
-
-		response := services.UpdateJobPropertyById(
-			id, jobProperty, *constructionJobPropertiesRepository,
-			*projectRepository, *projectJobRepository, *projectPropertyRepository, *jobsRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.GET("/getJobMaterials", func(context *gin.Context) {
-		code := http.StatusOK
-
-		response := services.FindJobMaterials(*constructionJobMaterialsRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.PUT("/updateJobMaterial/:id", func(context *gin.Context) {
-		id := context.Param("id")
-
-		var jobMaterial models.ConstructionJobMaterial
-
-		err := context.ShouldBindJSON(&jobMaterial)
-
-		// validation errors
-		if err != nil {
-			response := helpers.GenerateValidationResponse(err)
-
-			context.JSON(http.StatusBadRequest, response)
-
-			return
-		}
-
-		code := http.StatusOK
-
-		response := services.UpdateJobMaterialById(
-			id, jobMaterial, *constructionJobMaterialsRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.DELETE("/deleteJobMaterial/:id", func(context *gin.Context) {
-		id := context.Param("id")
-
-		code := http.StatusOK
-
-		response := services.DeleteJobMaterialById(id, *constructionJobMaterialsRepository)
-
-		if !response.Success {
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
-
-	route.POST("/createMaterial", func(context *gin.Context) {
-		var material models.ConstructionJobMaterial
-
-		// validate json
-		err := context.ShouldBindJSON(&material)
-
-		// validation errors
-		if err != nil {
-			log.Println("Cannot unmarshal project, error: ", err.Error())
-			// generate validation errors response
-			response := helpers.GenerateValidationResponse(err)
-
-			context.JSON(http.StatusBadRequest, response)
-
-			return
-		}
-
-		// default http status code = 200
-		code := http.StatusOK
-
-		// save project & get it's response
-		response := services.CreateMaterial(&material, *constructionJobMaterialsRepository)
-
-		// save contact failed
-		if !response.Success {
-			// change http status code to 400
-			code = http.StatusBadRequest
-		}
-
-		context.JSON(code, response)
-	})
+	auth := route.Group("/auth")
+	// Refresh time can be longer than token timeout
+	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+	auth.POST("/logout", authMiddleware.LogoutHandler)
+
+	auth.Use(authMiddleware.MiddlewareFunc())
+	{
+		auth.GET("/getAdminInfo", adminController.GetAdminInfoHandler)
+
+		auth.POST("/create", projectsController.CreateProjectHandler)
+		auth.PUT("/updateProject/:id", projectsController.UpdateProjectByIdHandler)
+		auth.DELETE("/deleteProject/:id", projectsController.DeleteProjectByIdHandler)
+		auth.GET("/getProjectJobs/:projectId", projectsController.GetProjectJobsByProjectIdHandler)
+		auth.PUT("/updateProjects", projectsController.UpdateProjectsHandler)
+
+		auth.GET("/getJobProperties", constructionPropertiesController.GetJobPropertiesHandler)
+		auth.PUT("/updateJobProperty/:id", constructionPropertiesController.UpdateJobPropertyByIdHandler)
+
+		auth.POST("/createMaterial", constructionPropertiesController.CreateMaterialHandler)
+		auth.DELETE("/deleteJobMaterial/:id", constructionPropertiesController.DeleteJobMaterialByIdHandler)
+		auth.PUT("/updateJobMaterial/:id", constructionPropertiesController.UpdateJobMaterialByIdHandler)
+		auth.GET("/getJobMaterials", constructionPropertiesController.GetMaterialsHandler)
+
+		auth.POST("/upload", commonController.ForgeUploadHandler)
+		auth.POST("/translate", commonController.ForgeTranslateHandler)
+		auth.POST("/createBucket", func(c *gin.Context) {
+			forge.CreateBucket("houmly")
+		})
+		auth.GET("/forgeGet", commonController.ForgeGetHandler)
+		auth.GET("/translationStatus", commonController.ForgeTranslationStatusHandler)
+	}
+
+	route.GET("/getProjects", projectsController.GetProjectsHandler)
+
+	route.GET("/getProperties", commonController.GetProperties)
+
+	route.GET("/getJobs", commonController.GetJobsHandler)
+
+	route.PUT("/updateProjectProperties/:id", projectsController.UpdateProjectPropertiesByIdHandler)
+
+	route.GET("/getProject/:id", projectsController.GetProjectByIdHandler)
 
 	return route
 }

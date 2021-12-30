@@ -6,7 +6,7 @@ import (
 	"bitbucket.org/houmeteam/houme-go/repositories"
 )
 
-func FindAllProperties(repository repositories.PropertyRepository) dtos.Response {
+func FindAllProperties(repository *repositories.PropertyRepository) dtos.Response {
 	operationResult := repository.FindAll()
 
 	if operationResult.Error != nil {

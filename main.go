@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"bitbucket.org/houmeteam/houme-go/configs"
+	"bitbucket.org/houmeteam/houme-go/controllers"
 	"bitbucket.org/houmeteam/houme-go/database"
 	"bitbucket.org/houmeteam/houme-go/models"
 	"bitbucket.org/houmeteam/houme-go/repositories"
@@ -20,6 +21,7 @@ func main() {
 
 	env := os.Getenv("ENV")
 	dbConfigs := configs.GetDBConfigs(env)
+	corsConfigs := configs.GetCorsConfigs(env)
 	db, err := database.ConnectToDB(*dbConfigs)
 
 	//unable to connect to database
@@ -43,7 +45,10 @@ func main() {
 
 	db.AutoMigrate(&models.ProjectJob{})
 	db.AutoMigrate(&models.ProjectProperty{})
+	db.AutoMigrate(&models.ProjectJobMaterial{})
 	db.AutoMigrate(&models.Project{})
+
+	db.AutoMigrate(&models.Admin{})
 
 	projectRepository := repositories.NewProjectRepository(db)
 	propertiesRepository := repositories.NewPropertyRepository(db)
@@ -52,11 +57,24 @@ func main() {
 	constructionJobMaterialRepository := repositories.NewConstructionJobMaterialRepository(db)
 	projectJobRepository := repositories.NewProjectJobRepository(db)
 	projectPropertyRepository := repositories.NewProjectPropertyRepository(db)
+	projectMaterialRepository := repositories.NewProjectMaterialRepository(db)
+	adminRepository := repositories.NewAdminRepository(db)
+
+	adminConstroller := controllers.NewAdminController(adminRepository)
+	projectsController := controllers.NewProjectsController(
+		projectRepository, constructionJobPropertyRepository, projectJobRepository,
+		projectPropertyRepository, jobsRepository, constructionJobMaterialRepository, projectMaterialRepository)
+	constructionPropertiesController := controllers.NewConstructionPropertiesController(
+		projectRepository, constructionJobPropertyRepository, projectJobRepository,
+		projectPropertyRepository, jobsRepository, constructionJobMaterialRepository, projectMaterialRepository)
+	commonController := controllers.NewCommonController(propertiesRepository, jobsRepository)
 
 	route := configs.SetupRoutes(
-		projectRepository, propertiesRepository, jobsRepository,
-		constructionJobPropertyRepository, constructionJobMaterialRepository,
-		projectJobRepository, projectPropertyRepository)
+		corsConfigs,
+		adminConstroller,
+		projectsController,
+		constructionPropertiesController,
+		commonController)
 
 	route.Run(":" + port)
 }

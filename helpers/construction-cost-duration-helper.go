@@ -39,6 +39,7 @@ func CalculateCostDurationForProjectJobs(
 	for _, job := range project.ProjectJobs {
 		jobProp := jobPropMap[job.Job.JobCode]
 		jobValue := propertiesMap[job.Job.Property.PropertyCode]
+
 		constrWorkNumber := calculateWorkers(jobProp, project.ConstructionWorkersNumber)
 
 		var constrDur float32
@@ -49,20 +50,10 @@ func CalculateCostDurationForProjectJobs(
 				jobValue, jobProp.ConstructionSpeed, constrWorkNumber)
 		}
 
-		constrDurInHours := int(math.Round(float64(constrDur)))
-		constrDurInDays := int(float64(constrDurInHours) / workingHoursInDay)
+		constrDurInHours := int(math.Ceil(float64(constrDur)))
+		constrDurInDays := int(math.Ceil(float64(constrDurInHours) / workingHoursInDay))
 
-		if (constrDurInHours % workingHoursInDay) > 0 {
-			// log.Println("------------")
-			// log.Println("PROP", jobProp.Job.Property.PropertyName, "JOB", jobProp.Job.JobName)
-			// log.Println("DUR FLOAT", constrDur, "DUR ROUND", constrDurInHours, "DUR DAYS", constrDurInDays)
-			// log.Println("V", jobValue, "S", jobProp.ConstructionSpeed, "N", constrWorkNumber)
-			// log.Println("OSTATOK", constrDurInHours%workingHoursInDay, "DELENIE", constrDurInHours/workingHoursInDay)
-			// log.Println("------------")
-			constrDurInDays += 1
-		}
-
-		constrCost := math.Round(float64(float32(constrDurInHours)*jobProp.ConstructionCost) * float64(constrWorkNumber))
+		constrCost := calculateCost(constrDurInHours, jobProp.ConstructionCost, constrWorkNumber)
 
 		calcJob := JobCalculations{
 			ConstructionWorkers:         constrWorkNumber,

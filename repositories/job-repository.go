@@ -29,19 +29,35 @@ func (r *JobRepository) FindProjectJobs(
 	wallMaterial string,
 	foundationMaterial string,
 	roofingMaterial string,
-	finishMaterial string) RepositoryResult {
+	finishMaterial string,
+	hasStairs bool) RepositoryResult {
 	var jobs []models.Job
 
-	err := r.db.
-		Preload("Property").
-		Where(
-			r.db.Where("required = ?", false).Where(
-				r.db.Where("foundation_material = ?", foundationMaterial).
-					Or("wall_material = ?", wallMaterial).
-					Or("roofing_material = ?", roofingMaterial).
-					Or("finish_material = ?", finishMaterial))).
-		Or("required = ?", true).
-		Find(&jobs).Error
+	var err error
+	if hasStairs {
+		err = r.db.
+			Preload("Property").
+			Where(
+				r.db.Where("required = ?", false).Where(
+					r.db.Where("foundation_material = ?", foundationMaterial).
+						Or("wall_material = ?", wallMaterial).
+						Or("roofing_material = ?", roofingMaterial).
+						Or("finish_material = ?", finishMaterial))).
+			Or("required = ?", true).
+			Find(&jobs).Error
+	} else {
+		err = r.db.
+			Preload("Property").
+			Where(
+				r.db.Where("required = ?", false).Where(
+					r.db.Where("foundation_material = ?", foundationMaterial).
+						Or("wall_material = ?", wallMaterial).
+						Or("roofing_material = ?", roofingMaterial).
+						Or("finish_material = ?", finishMaterial))).
+			Or("required = ?", true).
+			Not(models.Job{JobCode: "stairs"}).
+			Find(&jobs).Error
+	}
 
 	if err != nil {
 		return RepositoryResult{Error: err}
