@@ -39,6 +39,7 @@ func CalculateCostDurationForProjectJobs(
 	for _, job := range project.ProjectJobs {
 		jobProp := jobPropMap[job.Job.JobCode]
 		jobValue := propertiesMap[job.Job.Property.PropertyCode]
+
 		constrWorkNumber := calculateWorkers(jobProp, project.ConstructionWorkersNumber)
 
 		var constrDur float32
