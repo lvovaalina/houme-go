@@ -115,7 +115,6 @@ func UpdateProjectById(
 		}
 
 		var data = operationResult.Result.(*models.Project)
-		data.ProjectCoverBase64 = base64.StdEncoding.EncodeToString(data.ProjectCover)
 
 		return dtos.Response{Success: true, Data: data}
 	}
@@ -193,10 +192,6 @@ func GetAllProjects(repository *repositories.ProjectRepository) dtos.Response {
 	}
 
 	var datas = operationResult.Result.(*[]models.ProjectMin)
-	var arr = *datas
-	for index, data := range arr {
-		arr[index].ProjectCoverBase64 = base64.StdEncoding.EncodeToString(data.ProjectCover)
-	}
 
 	return dtos.Response{Success: true, Data: datas}
 }
@@ -224,10 +219,6 @@ func GetProjectById(id string, repository *repositories.ProjectRepository) dtos.
 	if operationResult.Error != nil {
 		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
 	}
-
-	data := operationResult.Result.(*models.Project)
-
-	data.ProjectCoverBase64 = base64.StdEncoding.EncodeToString(data.ProjectCover)
 
 	return dtos.Response{Success: true, Data: operationResult.Result}
 }
