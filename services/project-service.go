@@ -19,6 +19,13 @@ func CreateProject(
 	jobsRepository *repositories.JobRepository,
 	constructionJobMaterialRepository *repositories.ConstructionJobMaterialRepository) dtos.Response {
 
+	data, parseErr := base64.StdEncoding.DecodeString(project.ProjectCoverBase64)
+	log.Println(project.ProjectCoverBase64)
+	if parseErr != nil {
+		log.Println("Project id:", project.ProjectId, "Error decoding image string:", parseErr)
+	}
+	project.ProjectCover = data
+
 	setProjectJobsResult := setProjectJobs(
 		project, nil, constructionJobPropertyRepository, jobsRepository, constructionJobMaterialRepository)
 
