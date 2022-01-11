@@ -19,6 +19,13 @@ func CreateProject(
 	jobsRepository *repositories.JobRepository,
 	constructionJobMaterialRepository *repositories.ConstructionJobMaterialRepository) dtos.Response {
 
+	data, parseErr := base64.StdEncoding.DecodeString(project.ProjectCoverBase64)
+	log.Println(project.ProjectCoverBase64)
+	if parseErr != nil {
+		log.Println("Project id:", project.ProjectId, "Error decoding image string:", parseErr)
+	}
+	project.ProjectCover = data
+
 	setProjectJobsResult := setProjectJobs(
 		project, nil, constructionJobPropertyRepository, jobsRepository, constructionJobMaterialRepository)
 
@@ -115,7 +122,6 @@ func UpdateProjectById(
 		}
 
 		var data = operationResult.Result.(*models.Project)
-		data.ProjectCoverBase64 = base64.StdEncoding.EncodeToString(data.ProjectCover)
 
 		return dtos.Response{Success: true, Data: data}
 	}
@@ -193,10 +199,6 @@ func GetAllProjects(repository *repositories.ProjectRepository) dtos.Response {
 	}
 
 	var datas = operationResult.Result.(*[]models.ProjectMin)
-	var arr = *datas
-	for index, data := range arr {
-		arr[index].ProjectCoverBase64 = base64.StdEncoding.EncodeToString(data.ProjectCover)
-	}
 
 	return dtos.Response{Success: true, Data: datas}
 }
@@ -224,10 +226,6 @@ func GetProjectById(id string, repository *repositories.ProjectRepository) dtos.
 	if operationResult.Error != nil {
 		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
 	}
-
-	data := operationResult.Result.(*models.Project)
-
-	data.ProjectCoverBase64 = base64.StdEncoding.EncodeToString(data.ProjectCover)
 
 	return dtos.Response{Success: true, Data: operationResult.Result}
 }
