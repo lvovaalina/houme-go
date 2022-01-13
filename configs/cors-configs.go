@@ -1,8 +1,9 @@
 package configs
 
 type CorsConfigs struct {
-	Domain string
-	IsProd bool
+	Domain    string
+	SubDomain string
+	IsProd    bool
 }
 
 func GetCorsConfigs(env string) *CorsConfigs {
@@ -14,8 +15,9 @@ func GetCorsConfigs(env string) *CorsConfigs {
 
 	if env == "prod" {
 		return &CorsConfigs{
-			Domain: "https://houmly.herokuapp.com",
-			IsProd: true}
+			Domain:    "https://houmly.herokuapp.com",
+			SubDomain: "https://demo.houmly.com",
+			IsProd:    true}
 	}
 
 	return &CorsConfigs{

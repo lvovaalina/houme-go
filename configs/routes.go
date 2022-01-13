@@ -27,8 +27,12 @@ func SetupRoutes(
 
 	route.Use(gin.Logger())
 
+	domains := []string{corsConfigs.Domain}
+	if corsConfigs.SubDomain != "" {
+		domains = append(domains, corsConfigs.SubDomain)
+	}
 	route.Use(cors.New(cors.Config{
-		AllowOrigins: []string{corsConfigs.Domain},
+		AllowOrigins: domains,
 		AllowMethods: []string{"POST", "OPTIONS", "GET", "PUT", "DELETE"},
 		AllowHeaders: []string{
 			"Content-Length", "Content-Type", "Accept-Encoding",
