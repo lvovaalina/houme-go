@@ -159,14 +159,17 @@ func SetupRoutes(
 		auth.PUT("/updateJobMaterial/:id", constructionPropertiesController.UpdateJobMaterialByIdHandler)
 		auth.GET("/getJobMaterials", constructionPropertiesController.GetMaterialsHandler)
 
-		auth.POST("/upload", commonController.ForgeUploadHandler)
+		auth.POST("/forge/upload", commonController.ForgeUploadHandler)
 		auth.POST("/translate", commonController.ForgeTranslateHandler)
+		auth.DELETE("/deleteFile/:filename", commonController.ForgeDeleteFile)
 		auth.POST("/createBucket", func(c *gin.Context) {
 			forge.CreateBucket("houmly")
 		})
 		auth.GET("/forgeGet", commonController.ForgeGetHandler)
 		auth.GET("/translationStatus", commonController.ForgeTranslationStatusHandler)
 	}
+
+	route.POST("/uploadModel", commonController.UploadModel)
 
 	route.GET("/getProjects", projectsController.GetProjectsHandler)
 

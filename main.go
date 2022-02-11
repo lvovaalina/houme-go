@@ -7,6 +7,7 @@ import (
 	"bitbucket.org/houmeteam/houme-go/configs"
 	"bitbucket.org/houmeteam/houme-go/controllers"
 	"bitbucket.org/houmeteam/houme-go/database"
+	"bitbucket.org/houmeteam/houme-go/helpers"
 	"bitbucket.org/houmeteam/houme-go/models"
 	"bitbucket.org/houmeteam/houme-go/repositories"
 
@@ -59,6 +60,7 @@ func main() {
 	projectPropertyRepository := repositories.NewProjectPropertyRepository(db)
 	projectMaterialRepository := repositories.NewProjectMaterialRepository(db)
 	adminRepository := repositories.NewAdminRepository(db)
+	clientUploader := helpers.NewClientUploader(dbConfigs.GoogleFolder)
 
 	adminConstroller := controllers.NewAdminController(adminRepository)
 	projectsController := controllers.NewProjectsController(
@@ -67,7 +69,7 @@ func main() {
 	constructionPropertiesController := controllers.NewConstructionPropertiesController(
 		projectRepository, constructionJobPropertyRepository, projectJobRepository,
 		projectPropertyRepository, jobsRepository, constructionJobMaterialRepository, projectMaterialRepository)
-	commonController := controllers.NewCommonController(propertiesRepository, jobsRepository)
+	commonController := controllers.NewCommonController(propertiesRepository, jobsRepository, clientUploader)
 
 	route := configs.SetupRoutes(
 		corsConfigs,
