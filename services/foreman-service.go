@@ -11,46 +11,43 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const emailOrPasswordInvalid = "Email or Password is invalid"
-const secret = "somuchsecret"
+func ForemanRegister(
+	repository *repositories.ForemanRepository,
+	Foreman models.Foreman) dtos.Response {
+	password, _ := bcrypt.GenerateFromPassword([]byte(Foreman.PasswordString), 14)
 
-func AdminRegister(
-	repository *repositories.AdminRepository,
-	admin models.Admin) dtos.Response {
-	password, _ := bcrypt.GenerateFromPassword([]byte(admin.PasswordString), 14)
-
-	admin.Password = password
-	operationResult := repository.Save(admin)
+	Foreman.Password = password
+	operationResult := repository.Save(Foreman)
 
 	if operationResult.Error != nil {
 		return dtos.Response{Success: false, Message: operationResult.Error.Error()}
 	}
 
-	var data = operationResult.Result.(*models.Admin)
+	var data = operationResult.Result.(*models.Foreman)
 
 	return dtos.Response{Success: true, Data: data}
 }
 
-func AdminLogin(
-	repository *repositories.AdminRepository,
-	admin models.LoginInfo) dtos.Response {
+func ForemanLogin(
+	repository *repositories.ForemanRepository,
+	foreman *models.LoginInfo) dtos.Response {
 
-	response := dtos.Response{Success: true, Data: "admin"}
+	response := dtos.Response{Success: true}
 
-	operationResult := repository.GetByEmail(strings.ToLower(admin.Email))
+	operationResult := repository.GetByEmail(strings.ToLower(foreman.Email))
 	if operationResult.Error != nil {
 		response = dtos.Response{Success: false, Message: operationResult.Error.Error()}
 		return response
 	}
 
-	var existingAdmin = operationResult.Result.(*models.Admin)
-	if existingAdmin.ID == 0 {
+	var existingForeman = operationResult.Result.(*models.Foreman)
+	if existingForeman.ID == 0 {
 		response = dtos.Response{Success: false, Message: emailOrPasswordInvalid}
 		return response
 	}
 
-	log.Println(existingAdmin)
-	if err := bcrypt.CompareHashAndPassword(existingAdmin.Password, []byte(admin.PasswordString)); err != nil {
+	log.Println(existingForeman)
+	if err := bcrypt.CompareHashAndPassword(existingForeman.Password, []byte(foreman.PasswordString)); err != nil {
 		response = dtos.Response{Success: false, Message: emailOrPasswordInvalid}
 		return response
 	}
@@ -58,11 +55,11 @@ func AdminLogin(
 	return response
 }
 
-func AdminLogout() {
+func ForemanLogout() {
 
 }
 
-func IsAuthentificated(cookie string) (bool, *jwt.Token) {
+func IsForemanAuthentificated(cookie string) (bool, *jwt.Token) {
 	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})

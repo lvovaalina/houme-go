@@ -22,7 +22,10 @@ func SetupRoutes(
 	adminController *controllers.AdminController,
 	projectsController *controllers.ProjectsController,
 	constructionPropertiesController *controllers.ConstructionPropertiesController,
-	commonController *controllers.CommonController) *gin.Engine {
+	commonController *controllers.CommonController,
+	foremanController *controllers.ForemanController,
+	companyController *controllers.CompanyController,
+	companyJobController *controllers.CompanyJobController) *gin.Engine {
 	route := gin.Default()
 
 	route.Use(gin.Logger())
@@ -43,8 +46,6 @@ func SetupRoutes(
 		MaxAge:           12 * time.Hour,
 	}))
 
-	var identityKey = "id"
-
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:          "test zone",
 		Key:            []byte("secret key"),
@@ -58,7 +59,7 @@ func SetupRoutes(
 		CookieSameSite: http.SameSiteNoneMode,
 		CookieDomain:   corsConfigs.Domain,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			v, ok := data.(*models.Admin)
+			v, ok := data.(*models.LoginInfo)
 			if ok {
 				return jwt.MapClaims{
 					identityKey: v.Email,
@@ -69,29 +70,37 @@ func SetupRoutes(
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			return &models.Admin{
+			return &models.LoginInfo{
 				Email: claims[identityKey].(string),
 				Role:  claims["Role"].(string),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
-			var loginVals models.Admin
+			var loginVals models.LoginInfo
 			if err := c.ShouldBindJSON(&loginVals); err != nil {
 				return "", jwt.ErrMissingLoginValues
 			}
 
 			response := adminController.LoginAdminHandler(loginVals)
 			if response.Success {
-				return &models.Admin{
+				return &models.LoginInfo{
 					Email: loginVals.Email,
 					Role:  "admin",
 				}, nil
+			} else {
+				response := foremanController.LoginForemanHandler(&loginVals)
+				if response.Success {
+					return &models.LoginInfo{
+						Email: loginVals.Email,
+						Role:  "foreman",
+					}, nil
+				}
 			}
 
 			return nil, jwt.ErrFailedAuthentication
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if v, ok := data.(*models.Admin); ok && v.Role == "admin" {
+			if v, ok := data.(*models.LoginInfo); ok && v.Role == "admin" || v.Role == "foreman" {
 				return true
 			}
 
@@ -147,8 +156,7 @@ func SetupRoutes(
 
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
-		auth.GET("/getAdminInfo", adminController.GetAdminInfoHandler)
-
+		auth.GET("/getUserInfo", adminController.GetUserInfoHandler)
 		auth.POST("/create", projectsController.CreateProjectHandler)
 		auth.PUT("/updateProject/:id", projectsController.UpdateProjectByIdHandler)
 		auth.DELETE("/deleteProject/:id", projectsController.DeleteProjectByIdHandler)
@@ -170,6 +178,19 @@ func SetupRoutes(
 		})
 		auth.GET("/forgeGet", commonController.ForgeGetHandler)
 		auth.GET("/translationStatus", commonController.ForgeTranslationStatusHandler)
+
+		auth.POST("/company/create", companyController.AddCompanyHandler)
+		auth.GET("/company/get", companyController.GetCompaniesHandler)
+		auth.DELETE("/company/delete/:id", companyController.DeleteCompanyHandler)
+	}
+
+	foreman := route.Group("/foreman")
+	foreman.Use(authMiddleware.MiddlewareFunc())
+	{
+		auth.POST("/getJobs/:companyId", companyJobController.GetCompanyJobsHandler)
+		auth.DELETE("/deleteJob/:id", companyJobController.DeleteCompanyJobHandler)
+		auth.PUT("/updateJob/:id", companyJobController.UpdateCompanyJobHandler)
+		auth.GET("/createJob/:id", companyJobController.CreateCompanyJobHandler)
 	}
 
 	route.GET("/getProjects", projectsController.GetProjectsHandler)

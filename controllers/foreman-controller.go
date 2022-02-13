@@ -13,20 +13,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var identityKey = "id"
+var identityKeyF = "id"
 
-type AdminController struct {
-	adminRepository *repositories.AdminRepository
+type ForemanController struct {
+	foremanRepository *repositories.ForemanRepository
 }
 
-func NewAdminController(adminRepository *repositories.AdminRepository) *AdminController {
-	return &AdminController{adminRepository: adminRepository}
+func NewForemanController(foremanRepository *repositories.ForemanRepository) *ForemanController {
+	return &ForemanController{foremanRepository: foremanRepository}
 }
 
-func (c *AdminController) RegisterAdminHandler(context *gin.Context) {
-	var admin models.Admin
+func (c *ForemanController) RegisterForemanHandler(context *gin.Context) {
+	var foreman models.Foreman
 
-	err := context.ShouldBindJSON(&admin)
+	err := context.ShouldBindJSON(&foreman)
 
 	// validation errors
 	if err != nil {
@@ -42,7 +42,7 @@ func (c *AdminController) RegisterAdminHandler(context *gin.Context) {
 	code := http.StatusOK
 
 	// save project & get it's response
-	response := services.AdminRegister(c.adminRepository, admin)
+	response := services.ForemanRegister(c.foremanRepository, foreman)
 
 	// save contact failed
 	if !response.Success {
@@ -53,19 +53,17 @@ func (c *AdminController) RegisterAdminHandler(context *gin.Context) {
 	context.JSON(code, response)
 }
 
-func (c *AdminController) LoginAdminHandler(loginVals models.LoginInfo) dtos.Response {
-	return services.AdminLogin(c.adminRepository, loginVals)
+func (c *ForemanController) LoginForemanHandler(loginVals *models.LoginInfo) dtos.Response {
+	return services.ForemanLogin(c.foremanRepository, loginVals)
 }
 
-func (c *AdminController) GetUserInfoHandler(context *gin.Context) {
+func (c *ForemanController) GetForemanInfoHandler(context *gin.Context) {
 	code := http.StatusOK
 	claims := jwt.ExtractClaims(context)
-	log.Println(claims)
 	response := &dtos.Response{
 		Success: true,
 		Data: &models.LoginInfo{
-			Email: claims["id"].(string),
-			Role:  claims["Role"].(string),
+			Email: claims[identityKeyF].(string),
 		},
 	}
 
