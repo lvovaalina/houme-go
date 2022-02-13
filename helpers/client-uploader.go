@@ -36,7 +36,7 @@ func NewClientUploader(googleFolder string) *ClientUploader {
 		cl:         client,
 		bucketName: bucketName,
 		projectID:  projectID,
-		uploadPath: googleFolder,
+		uploadPath: googleFolder + "/",
 	}
 
 }
