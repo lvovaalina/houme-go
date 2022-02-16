@@ -136,6 +136,7 @@ func (c *ConstructionPropertiesController) UpdateJobMaterialByIdHandler(context 
 
 	// validation errors
 	if err != nil {
+		log.Println(err)
 		response := helpers.GenerateValidationResponse(err)
 
 		context.JSON(http.StatusBadRequest, response)
