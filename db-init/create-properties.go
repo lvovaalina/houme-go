@@ -67,13 +67,13 @@ func main() {
 	dbHost, dbUser, dbPassword, dbName := "localhost", "postgres", "l8397040", "houmly"
 	//sslmode=disable
 	// dbHost, dbUser, dbPassword, dbName :=
-	// 	"ec2-52-22-81-147.compute-1.amazonaws.com",
-	// 	"soxoxijvmbhqiv",
-	// 	"0ab277b623defd4ca7a72cba84bc60f06d7cabb6a8b311bc7580250bcef78b69",
-	// 	"ddnmu64tjqh9ju"
+	// 	"ec2-3-209-38-221.compute-1.amazonaws.com",
+	// 	"tqykcafyttxirk",
+	// 	"610c4d0e7a853449d21c4e1344b432b7ebff5a71466166728ee9dca963958fb8",
+	// 	"d440nml0a86pe8"
 
 	var connectionString = fmt.Sprintf(
-		"host=%s port=5432 user=%s dbname=%s password=%s sslmode=disable",
+		"host=%s port=5432 user=%s dbname=%s password=%s",
 		dbHost, dbUser, dbName, dbPassword,
 	)
 
@@ -115,7 +115,8 @@ func main() {
 	var jobs = []Job{
 		{JobCode: "rem-fert-lay", StageName: "Excavation", JobName: "Removal of the fertile layer", SubStageName: "Excavation", Property: Property{PropertyCode: "FA"}, Required: true},
 		{JobCode: "ax-mark", StageName: "Excavation", JobName: "Axis markings", SubStageName: "Excavation", Property: Property{PropertyCode: "FA"}, Required: true},
-		{JobCode: "pile-pour", StageName: "Foundation", JobName: "Pile pouring", SubStageName: "Foundation", Property: Property{PropertyCode: "FA"}, FoundationMaterial: "Pile", Required: false},
+		// {JobCode: "pile-drill", StageName: "Foundation", JobName: "Pile Drilling", SubStageName: "Foundation", Property: Property{PropertyCode: "FA"}, FoundationMaterial: "Pile", Required: false},
+		{JobCode: "pile-pour", StageName: "Foundation", JobName: "Pile Pouring", SubStageName: "Foundation", Property: Property{PropertyCode: "FA"}, FoundationMaterial: "Pile", Required: false},
 		{JobCode: "pile-shr-1", StageName: "Foundation", JobName: "Pile Shrinkage 1", SubStageName: "Foundation", PropertyID: nil, FoundationMaterial: "Pile", Required: false},
 		{JobCode: "pile-grill", StageName: "Foundation", JobName: "Pile Grillage", SubStageName: "Foundation", Property: Property{PropertyCode: "FA"}, FoundationMaterial: "Pile", Required: false},
 		{JobCode: "pile-shr-2", StageName: "Foundation", InParallel: true, ParallelGroupCode: "par-group-1", JobName: "Pile Shrinkage 2", SubStageName: "Foundation", FoundationMaterial: "Pile", Required: false},
@@ -139,7 +140,7 @@ func main() {
 		{JobCode: "soft-roof", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Soft roof", SubStageName: "Roof", Property: Property{PropertyCode: "RA"}, RoofingMaterial: "Soft roof", Required: false},
 		{JobCode: "roof-tiles", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Roof tiles (metal/soft)", SubStageName: "Roof", Property: Property{PropertyCode: "RA"}, RoofingMaterial: "Roof tiles", Required: false},
 		{JobCode: "wind-windsills", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Windows and windowsills", SubStageName: "Windows and windowsills", Property: Property{PropertyCode: "WWN"}, Required: true},
-		{JobCode: "warming", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Warming", SubStageName: "Warming", Property: Property{PropertyCode: "EFA"}, Required: true},
+		{JobCode: "ins", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-2", JobName: "Insulation", SubStageName: "Insulation", Property: Property{PropertyCode: "EFA"}, Required: true},
 		{JobCode: "floor-sys", StageName: "Box", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Subfloor/Floor System", SubStageName: "Subfloor/Floor System", Property: Property{PropertyCode: "FA"}, Required: true},
 		{JobCode: "stairs", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Stairs", SubStageName: "Stairs", Property: Property{PropertyCode: "SN"}, Required: true},
 		{JobCode: "plaster", StageName: "Interior", InParallel: true, ParallelGroupCode: "par-group-3", JobName: "Plaster", SubStageName: "Exterior decoration of the house", Property: Property{PropertyCode: "WV"}, FinishMaterial: "Plaster", Required: false},
@@ -158,59 +159,60 @@ func main() {
 	}
 
 	var constructionProperties = []ConstructionJobProperty{
-		{CompanyName: "Construction", Job: Job{JobCode: "rem-fert-lay"}, ConstructionSpeed: 25.0, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
-		{CompanyName: "Construction", Job: Job{JobCode: "ax-mark"}, ConstructionSpeed: 6.25, ConstructionCost: 0, MinWorkers: 4, MaxWorkers: 4, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "rem-fert-lay"}, ConstructionSpeed: 25.0, ConstructionCost: 6.0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
+		{CompanyName: "Construction", Job: Job{JobCode: "ax-mark"}, ConstructionSpeed: 6.25, ConstructionCost: 1.0, MinWorkers: 4, MaxWorkers: 4, OptWorkers: 4},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "pile-pour"}, ConstructionSpeed: 0.56, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 6, OptWorkers: 3},
+		// {CompanyName: "Construction", Job: Job{JobCode: "pile-drill"}, ConstructionSpeed: 0.56, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 6, OptWorkers: 3},
+		{CompanyName: "Construction", Job: Job{JobCode: "pile-pour"}, ConstructionSpeed: 0.56, ConstructionCost: 12.0, MinWorkers: 1, MaxWorkers: 6, OptWorkers: 3},
 		{CompanyName: "Construction", Job: Job{JobCode: "pile-shr-1"}, ConstructionFixDurationInHours: 14, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
-		{CompanyName: "Construction", Job: Job{JobCode: "pile-grill"}, ConstructionSpeed: 0.83, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{CompanyName: "Construction", Job: Job{JobCode: "pile-grill"}, ConstructionSpeed: 0.83, ConstructionCost: 5.0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
 		{CompanyName: "Construction", Job: Job{JobCode: "pile-shr-2"}, ConstructionFixDurationInHours: 26, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "ribbon-dig"}, ConstructionSpeed: 1.67, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
-		{CompanyName: "Construction", Job: Job{JobCode: "ribbon-tying-formwork"}, ConstructionSpeed: 0.67, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
-		{CompanyName: "Construction", Job: Job{JobCode: "ribbon-pour"}, ConstructionSpeed: 0.42, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{CompanyName: "Construction", Job: Job{JobCode: "ribbon-dig"}, ConstructionSpeed: 1.67, ConstructionCost: 3.0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{CompanyName: "Construction", Job: Job{JobCode: "ribbon-tying-formwork"}, ConstructionSpeed: 0.67, ConstructionCost: 6.0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{CompanyName: "Construction", Job: Job{JobCode: "ribbon-pour"}, ConstructionSpeed: 0.42, ConstructionCost: 9.0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
 		{CompanyName: "Construction", Job: Job{JobCode: "ribbon-shr-3"}, ConstructionFixDurationInHours: 26, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "plate-exv"}, ConstructionSpeed: 1.88, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "plate-backfl-grvl-ramr"}, ConstructionSpeed: 0.94, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "plate-styrofoam-foil-form-reinf"}, ConstructionSpeed: 0.42, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "plate-fill"}, ConstructionSpeed: 2.5, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "plate-exv"}, ConstructionSpeed: 1.88, ConstructionCost: 3.0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "plate-backfl-grvl-ramr"}, ConstructionSpeed: 0.94, ConstructionCost: 6.0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "plate-styrofoam-foil-form-reinf"}, ConstructionSpeed: 0.42, ConstructionCost: 7.0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "plate-fill"}, ConstructionSpeed: 2.5, ConstructionCost: 3.0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
 		{CompanyName: "Construction", Job: Job{JobCode: "plate-shr-4"}, ConstructionFixDurationInHours: 26, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 1, OptWorkers: 1},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "backfl-earth"}, ConstructionSpeed: 2.22, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
-		{CompanyName: "Construction", Job: Job{JobCode: "commun"}, ConstructionFixDurationInHours: 24, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{CompanyName: "Construction", Job: Job{JobCode: "backfl-earth"}, ConstructionSpeed: 2.22, ConstructionCost: 3.0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
+		{CompanyName: "Construction", Job: Job{JobCode: "commun"}, ConstructionFixDurationInHours: 24, ConstructionCost: 120.0, MinWorkers: 1, MaxWorkers: 3, OptWorkers: 3},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "foam-blck"}, ConstructionSpeed: 2.67, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 12, OptWorkers: 6},
-		{CompanyName: "Construction", Job: Job{JobCode: "brick"}, ConstructionSpeed: 0.13, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 12, OptWorkers: 6},
-		{CompanyName: "Construction", Job: Job{JobCode: "clt"}, ConstructionSpeed: 0.78, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 16, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "framt"}, ConstructionSpeed: 0.13, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "foam-blck"}, ConstructionSpeed: 2.67, ConstructionCost: 120.0, MinWorkers: 1, MaxWorkers: 12, OptWorkers: 6},
+		{CompanyName: "Construction", Job: Job{JobCode: "brick"}, ConstructionSpeed: 0.13, ConstructionCost: 140.0, MinWorkers: 1, MaxWorkers: 12, OptWorkers: 6},
+		{CompanyName: "Construction", Job: Job{JobCode: "clt"}, ConstructionSpeed: 0.78, ConstructionCost: 50.0, MinWorkers: 1, MaxWorkers: 16, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "framt"}, ConstructionSpeed: 0.13, ConstructionCost: 38.0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "roof-frame"}, ConstructionSpeed: 0.31, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "fold"}, ConstructionSpeed: 0.83, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "soft-roof"}, ConstructionSpeed: 1.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "roof-tiles"}, ConstructionSpeed: 1.67, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "roof-frame"}, ConstructionSpeed: 0.31, ConstructionCost: 17.0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "fold"}, ConstructionSpeed: 0.83, ConstructionCost: 10.0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "soft-roof"}, ConstructionSpeed: 1.25, ConstructionCost: 8.0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "roof-tiles"}, ConstructionSpeed: 1.67, ConstructionCost: 8.0, MinWorkers: 1, MaxWorkers: 18, OptWorkers: 4},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "wind-windsills"}, ConstructionSpeed: 0.2, ConstructionCost: 0, MinWorkers: 2, MaxWorkers: 6, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "warming"}, ConstructionSpeed: 2.0, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "floor-sys"}, ConstructionSpeed: 0.63, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "stairs"}, ConstructionSpeed: 0.01, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "wind-windsills"}, ConstructionSpeed: 0.2, ConstructionCost: 100.0, MinWorkers: 2, MaxWorkers: 6, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "ins"}, ConstructionSpeed: 2.0, ConstructionCost: 12.0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "floor-sys"}, ConstructionSpeed: 0.63, ConstructionCost: 12.0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "stairs"}, ConstructionSpeed: 0.01, ConstructionCost: 15.0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 4},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "plaster"}, ConstructionSpeed: 1.67, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 8},
-		{CompanyName: "Construction", Job: Job{JobCode: "ventfacade"}, ConstructionSpeed: 0.42, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 16, OptWorkers: 8},
+		{CompanyName: "Construction", Job: Job{JobCode: "plaster"}, ConstructionSpeed: 1.67, ConstructionCost: 13.0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 8},
+		{CompanyName: "Construction", Job: Job{JobCode: "ventfacade"}, ConstructionSpeed: 0.42, ConstructionCost: 15.0, MinWorkers: 1, MaxWorkers: 16, OptWorkers: 8},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "floor"}, ConstructionSpeed: 1.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "elecrt-wiring"}, ConstructionSpeed: 1.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
+		{CompanyName: "Construction", Job: Job{JobCode: "floor"}, ConstructionSpeed: 1.25, ConstructionCost: 22.0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "elecrt-wiring"}, ConstructionSpeed: 1.25, ConstructionCost: 11.0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "plast-paint"}, ConstructionSpeed: 1.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "tile"}, ConstructionSpeed: 1.00, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "plast-paint"}, ConstructionSpeed: 1.25, ConstructionCost: 36.0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "tile"}, ConstructionSpeed: 1.00, ConstructionCost: 36.0, MinWorkers: 1, MaxWorkers: 8, OptWorkers: 4},
 
-		{CompanyName: "Construction", Job: Job{JobCode: "doors"}, ConstructionSpeed: 0.25, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
-		{CompanyName: "Construction", Job: Job{JobCode: "kitchen-assbly-eq-inst"}, ConstructionSpeed: 0.03, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
-		{CompanyName: "Construction", Job: Job{JobCode: "plumbing"}, ConstructionSpeed: 3.33, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
-		{CompanyName: "Construction", Job: Job{JobCode: "light"}, ConstructionFixDurationInHours: 16, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
-		{CompanyName: "Construction", Job: Job{JobCode: "switches"}, ConstructionFixDurationInHours: 16, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
-		{CompanyName: "Construction", Job: Job{JobCode: "furnish"}, ConstructionFixDurationInHours: 64, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 6, OptWorkers: 4},
-		{CompanyName: "Construction", Job: Job{JobCode: "comiss-works"}, ConstructionFixDurationInHours: 48, ConstructionCost: 0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
+		{CompanyName: "Construction", Job: Job{JobCode: "doors"}, ConstructionSpeed: 0.25, ConstructionCost: 122.0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
+		{CompanyName: "Construction", Job: Job{JobCode: "kitchen-assbly-eq-inst"}, ConstructionSpeed: 0.03, ConstructionCost: 15.0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
+		{CompanyName: "Construction", Job: Job{JobCode: "plumbing"}, ConstructionSpeed: 3.33, ConstructionCost: 3.0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
+		{CompanyName: "Construction", Job: Job{JobCode: "light"}, ConstructionFixDurationInHours: 16, ConstructionCost: 8.0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
+		{CompanyName: "Construction", Job: Job{JobCode: "switches"}, ConstructionFixDurationInHours: 16, ConstructionCost: 10.0, MinWorkers: 1, MaxWorkers: 2, OptWorkers: 2},
+		{CompanyName: "Construction", Job: Job{JobCode: "furnish"}, ConstructionFixDurationInHours: 64, ConstructionCost: 30.0, MinWorkers: 1, MaxWorkers: 6, OptWorkers: 4},
+		{CompanyName: "Construction", Job: Job{JobCode: "comiss-works"}, ConstructionFixDurationInHours: 48, ConstructionCost: 20.0, MinWorkers: 1, MaxWorkers: 4, OptWorkers: 2},
 	}
 
 	log.Println(constructionProperties[0].CompanyName)
