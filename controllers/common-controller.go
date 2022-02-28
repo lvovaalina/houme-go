@@ -8,8 +8,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"bitbucket.org/houmeteam/houme-go/forge"
+	"bitbucket.org/houmeteam/houme-go/helpers"
 	"bitbucket.org/houmeteam/houme-go/repositories"
 	"bitbucket.org/houmeteam/houme-go/services"
 	"github.com/gin-gonic/gin"
@@ -18,6 +20,7 @@ import (
 type CommonController struct {
 	propertiesRepository *repositories.PropertyRepository
 	jobsRepository       *repositories.JobRepository
+	uploader             *helpers.ClientUploader
 }
 
 type TranslateResponse struct {
@@ -25,16 +28,63 @@ type TranslateResponse struct {
 }
 
 func NewCommonController(propertiesRepository *repositories.PropertyRepository,
-	jobsRepository *repositories.JobRepository) *CommonController {
+	jobsRepository *repositories.JobRepository,
+	clientUploader *helpers.ClientUploader) *CommonController {
 	return &CommonController{
 		propertiesRepository: propertiesRepository,
 		jobsRepository:       jobsRepository,
+		uploader:             clientUploader,
 	}
 }
 
 func (c *CommonController) ForgeGetHandler(context *gin.Context) {
 	projects := forge.GetBucketObjects("houmly")
 	context.JSON(http.StatusOK, projects)
+}
+
+func (c *CommonController) UploadModel(context *gin.Context) {
+	name := context.PostForm("name")
+	email := context.PostForm("email")
+
+	f, err := context.FormFile("file")
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	log.Println("Strarting to upload file: " + f.Filename)
+
+	filename := time.Now().String() + f.Filename
+
+	blobFile, err := f.Open()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = c.uploader.UploadFile(blobFile, filename)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = c.uploader.CreateFile(filename, name, email)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	context.JSON(200, gin.H{
+		"message": "success",
+	})
 }
 
 func (c *CommonController) ForgeUploadHandler(context *gin.Context) {
@@ -77,6 +127,15 @@ func (c *CommonController) ForgeTranslateHandler(context *gin.Context) {
 func (c *CommonController) ForgeTranslationStatusHandler(context *gin.Context) {
 
 	forge.GetTranslationStatus("houmly", "Classic_house.rvt")
+	context.JSON(http.StatusOK, gin.H{
+		"message": "ok"})
+}
+
+func (c *CommonController) ForgeDeleteFile(context *gin.Context) {
+	filename := context.Param("filename")
+	log.Println("FROM REQUEST", filename)
+
+	forge.DeleteFileInBucket("houmly", filename)
 	context.JSON(http.StatusOK, gin.H{
 		"message": "ok"})
 }

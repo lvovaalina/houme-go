@@ -116,7 +116,8 @@ func DeleteFileInBucket(bucketKey string, fileName string) {
 	token := GetAuthToken(false)
 
 	client := &http.Client{}
-	req, err := http.NewRequest("DELETE", baseUrl+"oss/v2/buckets/"+bucketKey+"/objects/"+fileName, nil)
+	log.Println("FILENAME", url.QueryEscape(fileName))
+	req, err := http.NewRequest("DELETE", baseUrl+"oss/v2/buckets/"+bucketKey+"/objects/"+url.QueryEscape(fileName), nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -135,7 +136,8 @@ func DeleteFileInBucket(bucketKey string, fileName string) {
 	}
 
 	bodyString := string(bodyBytes)
-	log.Println(bodyString)
+	log.Println("RESPONSE ", bodyString)
+	log.Println(resp.Status)
 }
 
 func CreateBucket(bucketKey string) {

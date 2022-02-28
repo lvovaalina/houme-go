@@ -55,6 +55,7 @@ func UpdateJobMaterialById(id string, jobMaterial models.ConstructionJobMaterial
 
 	existingJobMaterial.CompanyName = jobMaterial.CompanyName
 	existingJobMaterial.MaterialName = jobMaterial.MaterialName
+	existingJobMaterial.MaterialNamePL = jobMaterial.MaterialNamePL
 	existingJobMaterial.MaterialCost = jobMaterial.MaterialCost
 
 	operationResult := repository.Save(existingJobMaterial)
