@@ -10,10 +10,11 @@ import (
 
 type Property struct {
 	gorm.Model
-	PropertyId   int    `gorm:"primary_key;autoIncrement"`
-	PropertyCode string `gorm:"unique"`
-	PropertyName string `gorm:"unique"`
-	PropertyUnit string
+	PropertyId     int    `gorm:"primary_key;autoIncrement"`
+	PropertyCode   string `gorm:"unique"`
+	PropertyName   string `gorm:"unique"`
+	PropertyNamePL string
+	PropertyUnit   string
 }
 
 type Job struct {
@@ -95,24 +96,24 @@ func main() {
 	db.AutoMigrate(&ConstructionJobProperty{})
 
 	var properties = []Property{
-		{PropertyName: "Foundation volume", PropertyUnit: "sq.m.", PropertyCode: "FV"},
-		{PropertyName: "Floor area at the base", PropertyUnit: "sq.m.", PropertyCode: "FA"},
-		{PropertyName: "Total floor area", PropertyUnit: "sq.m.", PropertyCode: "TFA"},
-		{PropertyName: "Walls volume", PropertyUnit: "sq.m.", PropertyCode: "WV"},
-		{PropertyName: "Number of walls", PropertyUnit: "ps", PropertyCode: "WN"},
-		{PropertyName: "Roof area", PropertyUnit: "sq.m.", PropertyCode: "RA"},
-		{PropertyName: "Number of windows", PropertyUnit: "ps", PropertyCode: "WWN"},
-		{PropertyName: "Number of kitchens", PropertyUnit: "ps", PropertyCode: "KN"},
-		{PropertyName: "Number of doors", PropertyUnit: "ps", PropertyCode: "DN"},
-		{PropertyName: "Number of stairs", PropertyUnit: "ps", PropertyCode: "SN"},
-		{PropertyName: "House perimeter", PropertyUnit: "sq.m.", PropertyCode: "HM"},
-		{PropertyName: "Exterior finishing area", PropertyUnit: "sq.m.", PropertyCode: "EFA"},
-		{PropertyName: "Interior finishing area", PropertyUnit: "sq.m.", PropertyCode: "IFA"},
-		{PropertyName: "Tile area", PropertyUnit: "sq.m.", PropertyCode: "TA"},
-		{PropertyName: "Rooms Number", PropertyUnit: "ps", PropertyCode: "RN"},
-		{PropertyName: "Points Number", PropertyUnit: "ps", PropertyCode: "PN"},
-		{PropertyName: "Outlet Number", PropertyUnit: "ps", PropertyCode: "ON"},
-		{PropertyName: "Pipes Length", PropertyUnit: "rm", PropertyCode: "PL"},
+		{PropertyName: "Foundation volume", PropertyNamePL: "Objętość podkładu", PropertyUnit: "sq.m.", PropertyCode: "FV"},
+		{PropertyName: "Floor area at the base", PropertyNamePL: "Powierzchnia fundamentów", PropertyUnit: "sq.m.", PropertyCode: "FA"},
+		{PropertyName: "Total floor area", PropertyNamePL: "Całkowita powierzchnia podłogi", PropertyUnit: "sq.m.", PropertyCode: "TFA"},
+		{PropertyName: "Walls volume", PropertyNamePL: "Objętość ścian", PropertyUnit: "sq.m.", PropertyCode: "WV"},
+		{PropertyName: "Number of walls", PropertyNamePL: "Liczba ścian", PropertyUnit: "ps", PropertyCode: "WN"},
+		{PropertyName: "Roof area", PropertyNamePL: "Powierzchnia dachu", PropertyUnit: "sq.m.", PropertyCode: "RA"},
+		{PropertyName: "Number of windows", PropertyNamePL: "Liczba okien", PropertyUnit: "ps", PropertyCode: "WWN"},
+		{PropertyName: "Number of kitchens", PropertyNamePL: "Number of kitchens", PropertyUnit: "ps", PropertyCode: "KN"},
+		{PropertyName: "Number of doors", PropertyNamePL: "Number of doors", PropertyUnit: "ps", PropertyCode: "DN"},
+		{PropertyName: "Number of stairs", PropertyNamePL: "Number of stairs", PropertyUnit: "ps", PropertyCode: "SN"},
+		{PropertyName: "House perimeter", PropertyNamePL: "Obwód domu", PropertyUnit: "sq.m.", PropertyCode: "HM"},
+		{PropertyName: "Exterior finishing area", PropertyNamePL: "Zewnętrzna powierzchnia wykończeniowa", PropertyUnit: "sq.m.", PropertyCode: "EFA"},
+		{PropertyName: "Interior finishing area", PropertyNamePL: "Powierzchnia wykończenia wnętrz", PropertyUnit: "sq.m.", PropertyCode: "IFA"},
+		{PropertyName: "Tile area", PropertyNamePL: "Obszar płytek", PropertyUnit: "sq.m.", PropertyCode: "TA"},
+		{PropertyName: "Rooms Number", PropertyNamePL: "Liczba pokoi", PropertyUnit: "ps", PropertyCode: "RN"},
+		{PropertyName: "Points Number", PropertyNamePL: "Liczba punktów", PropertyUnit: "ps", PropertyCode: "PN"},
+		{PropertyName: "Outlet Number", PropertyNamePL: "Numer wylotu", PropertyUnit: "ps", PropertyCode: "ON"},
+		{PropertyName: "Pipes Length", PropertyNamePL: "Długość rur", PropertyUnit: "rm", PropertyCode: "PL"},
 	}
 
 	var jobs = []Job{
