@@ -49,10 +49,6 @@ func main() {
 	db.AutoMigrate(&models.Project{})
 
 	db.AutoMigrate(&models.Admin{})
-	db.AutoMigrate(&models.Foreman{})
-
-	db.AutoMigrate(&models.CompanyJob{})
-	db.AutoMigrate(&models.Company{})
 
 	projectRepository := repositories.NewProjectRepository(db)
 	propertiesRepository := repositories.NewPropertyRepository(db)
@@ -63,11 +59,8 @@ func main() {
 	projectPropertyRepository := repositories.NewProjectPropertyRepository(db)
 	projectMaterialRepository := repositories.NewProjectMaterialRepository(db)
 	adminRepository := repositories.NewAdminRepository(db)
-	foremanRepository := repositories.NewForemanRepository(db)
-	companyRepository := repositories.NewCompanyRepository(db)
 
 	adminConstroller := controllers.NewAdminController(adminRepository)
-	foremanController := controllers.NewForemanController(foremanRepository)
 	projectsController := controllers.NewProjectsController(
 		projectRepository, constructionJobPropertyRepository, projectJobRepository,
 		projectPropertyRepository, jobsRepository, constructionJobMaterialRepository, projectMaterialRepository)
@@ -75,16 +68,13 @@ func main() {
 		projectRepository, constructionJobPropertyRepository, projectJobRepository,
 		projectPropertyRepository, jobsRepository, constructionJobMaterialRepository, projectMaterialRepository)
 	commonController := controllers.NewCommonController(propertiesRepository, jobsRepository)
-	companyController := controllers.NewCompanyController(companyRepository, jobsRepository)
 
 	route := configs.SetupRoutes(
 		corsConfigs,
 		adminConstroller,
 		projectsController,
 		constructionPropertiesController,
-		commonController,
-		foremanController,
-		companyController)
+		commonController)
 
 	route.Run(":" + port)
 }

@@ -33,9 +33,9 @@ func AdminRegister(
 
 func AdminLogin(
 	repository *repositories.AdminRepository,
-	admin models.LoginInfo) dtos.Response {
+	admin models.Admin) dtos.Response {
 
-	response := dtos.Response{Success: true, Data: "admin"}
+	response := dtos.Response{Success: true}
 
 	operationResult := repository.GetByEmail(strings.ToLower(admin.Email))
 	if operationResult.Error != nil {

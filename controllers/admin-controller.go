@@ -53,19 +53,17 @@ func (c *AdminController) RegisterAdminHandler(context *gin.Context) {
 	context.JSON(code, response)
 }
 
-func (c *AdminController) LoginAdminHandler(loginVals models.LoginInfo) dtos.Response {
+func (c *AdminController) LoginAdminHandler(loginVals models.Admin) dtos.Response {
 	return services.AdminLogin(c.adminRepository, loginVals)
 }
 
-func (c *AdminController) GetUserInfoHandler(context *gin.Context) {
+func (c *AdminController) GetAdminInfoHandler(context *gin.Context) {
 	code := http.StatusOK
 	claims := jwt.ExtractClaims(context)
-	log.Println(claims)
 	response := &dtos.Response{
 		Success: true,
-		Data: &models.LoginInfo{
-			Email: claims["id"].(string),
-			Role:  claims["Role"].(string),
+		Data: &models.Admin{
+			Email: claims[identityKey].(string),
 		},
 	}
 
