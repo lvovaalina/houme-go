@@ -8,6 +8,9 @@ type Job struct {
 	JobName            string `gorm:"unique"`
 	StageName          string
 	SubStageName       string
+	JobNamePL          string
+	StageNamePL        string
+	SubStageNamePL     string
 	WallMaterial       string
 	FinishMaterial     string
 	FoundationMaterial string
