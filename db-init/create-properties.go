@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -58,23 +59,12 @@ var db *gorm.DB
 
 func main() {
 	var err error
-	// db, err = gorm.Open(
-	// 	"postgres",
-	// 	"host=ec2-52-22-81-147.compute-1.amazonaws.com port=5432 user=soxoxijvmbhqiv dbname=ddnmu64tjqh9ju password=0ab277b623defd4ca7a72cba84bc60f06d7cabb6a8b311bc7580250bcef78b69")
 
-	// db, err = gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=houmly password=l8397040 sslmode=disable")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// 	panic("failed to connect database")
-	// }
-
-	dbHost, dbUser, dbPassword, dbName := "localhost", "postgres", "l8397040", "houmly"
-	//sslmode=disable
-	// dbHost, dbUser, dbPassword, dbName :=
-	// 	"ec2-3-209-38-221.compute-1.amazonaws.com",
-	// 	"tqykcafyttxirk",
-	// 	"610c4d0e7a853449d21c4e1344b432b7ebff5a71466166728ee9dca963958fb8",
-	// 	"d440nml0a86pe8"
+	dbHost, dbUser, dbPassword, dbName :=
+		os.Getenv("POSTGRESQL_HOST"),
+		os.Getenv("POSTGRESQL_USER"),
+		os.Getenv("POSTGRESQL_PASSWORD"),
+		os.Getenv("POSTGRESQL_DB_NAME")
 
 	var connectionString = fmt.Sprintf(
 		"host=%s port=5432 user=%s dbname=%s password=%s",
