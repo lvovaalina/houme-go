@@ -9,15 +9,16 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 var (
-	baseUrl      = "https://developer.api.autodesk.com/"
-	clentId      = "iTsiwR4RGLuOJdyXz49v3szapWzzxGs3"
-	clientSecret = "xI2RjkCJiIbLEMPF"
-	grantType    = "client_credentials"
-	scope        = "data:read data:write data:create bucket:create bucket:read bucket:delete"
-	token        = ""
+	baseUrl      = os.Getenv("BASE_URL")
+	clentId      = os.Getenv("CLIENT_ID")
+	clientSecret = os.Getenv("CLIENT_SECRET")
+	grantType    = os.Getenv("GRANT_TYPE")
+	scope        = os.Getenv("SCOPE")
+	token        = os.Getenv("TOKEN")
 )
 
 func Authentificate() string {
